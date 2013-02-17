@@ -61,12 +61,14 @@ int hash(string c){
 			return 19;
 		else if(letra(c[0]))
 			return 20;
-		else if(c==" " || c== "\n" || c=="\0" || c=="\t")
-			return 23;
+		//~ else if(*c.begin() =='\"' && c.begin() !=c.end()-1)
+			//~ return 0;
 		else if(c=="\"" || *c.begin() =='\"')
 			return 21;
 		else if(c=="-" || c=="<" || c=="<-" || c==":")
 			return 22;
+		else if(c==" " || c== "\n" || c=="\0" || c=="\t")
+			return 23;
 	return 0;
 }
 
@@ -77,9 +79,7 @@ int main(){
          cout << "Erro abrindo arquivo." << endl;
          return -1;
      } 
-
-	int apost=1;
-	
+     
 	char c ='a' ;
 	string s ="\0";
 	while (entrada.get(c)){
@@ -184,10 +184,10 @@ int main(){
 						cout << "<FALSE,>";
 						break;		
 					case 21:
-						if(apost)
-							apost=0;
-						else 
-							apost =1;
+						if( s.begin() !=s.end()-1){
+							cout << "eRRO" << endl;
+							exit(1);
+						}
 						break;
 					case 22:
 						break;
@@ -195,7 +195,7 @@ int main(){
 						s="";
 						break;
 					case 0:
-						cout << "eRRO" << endl;
+						cout << "ERRO" << endl;
 						exit(1);
 						break;	
 				}
@@ -204,5 +204,3 @@ int main(){
 	}	
 	return 0;
 }
-	
-
