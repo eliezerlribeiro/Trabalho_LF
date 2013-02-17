@@ -1,27 +1,32 @@
-^ TOKEN <AND,>
-' TOKEN <NOT,>
-( TOKEN <LPARENTS,>
-) TOKEN <RPARENTS,>
-{ TOKEN <LCHAVES,>
-} TOKEN <RCHAVES,>
-; TOKEN <PONTOVIRGULA,>
+( TOKEN <LPARENTS,> == 1
+) TOKEN <RPARENTS,> == 2
+{ TOKEN <LCHAVES,>  == 3
+} TOKEN <RCHAVES,>  == 4
+; TOKEN <PONTOVIRGULA,> == 5
+, TOKEN <VIRGULA,>  == 6
 
-v TOKEN <OR,> //Especial pois pode ser VARIAVEL, TRUE, ou OR
-	
-:= TOKEN <IGUAL,> // Se vir dpeois dos := é toquem
+case 22; 
+^ TOKEN <AND,> == 7
+' TOKEN <NOT,> == 8
+:= TOKEN <IGUAL,> == 9// Se vir dpeois dos := é token
+-> TOKEN <SE,> == 10
+<-> TOKEN <SESOMENTESE, > == 11
 
-in TOKEN <IN, > 
-if TOKEN <IF,>
+v TOKEN <OR,>==12 //Especial pois pode ser VARIAVEL, TRUE, ou OR
 
--> TOKEN <SE,>
+//0 1  == 13
+"v" "verdadeiro" "true" TOKEN <TRUE, > == 14
+ "f" "falso" "false" TOKEN <FALSE, > == 15
+" == 21
 
-<-> TOKEN <SESOMENTESE, >
+espaço tabulacao = 22;
 
-out TOKEN <OUT, >
+else TOKEN <ELSE,> == 16
+if TOKEN <IF,> == 17
 
-else TOKEN <ELSE,>
+out TOKEN <OUT, > == 18
+in TOKEN <IN, >  == 19
 
-1 "v" "verdadeiro" "true" TOKEN <TRUE, >
-0 "f" "falso" "false" TOKEN <FALSE, >
+varivaeis TOKEN <ID, VARIAVEL> == 20
 
-varivaeis TOKEN <ID, VARIAVEL>
+invalidos == 0
