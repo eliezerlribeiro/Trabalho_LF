@@ -51,8 +51,6 @@ int hash(string c){
 			return 14;
 		else if(c=="\"f\"" || c=="0" || c=="\"falso\"" || c=="\"false\"")
 			return 15;
-		else if(c=="\"" || *c.begin() =='\"')
-			return 21;
 		else if(c=="else")
 			return 16;
 		else if(c=="if")
@@ -65,6 +63,8 @@ int hash(string c){
 			return 20;
 		else if(c==" " || c== "\n" || c=="\0" || c=="\t")
 			return 23;
+		else if(c=="\"" || *c.begin() =='\"')
+			return 21;
 		else if(c=="-" || c=="<" || c=="<-" || c==":")
 			return 22;
 	return 0;
@@ -130,22 +130,7 @@ int main(){
 				s+=c;
 				a = hash(s);
 				switch(a){
-					case 14:
-						s="";
-						cout << "<TRUE,>";
-						break;
-					case 15:
-						s="";
-						cout << "<FALSE,>";
-						break;
-					case 7: 
-						s = "";
-						cout << "<AND,>";
-						break;
-					case 8:
-						s = "";
-						cout << "<NOT,>";
-						break;
+
 					case 1:
 						s = "";
 						cout << "<LPARENTS,>";
@@ -169,26 +154,42 @@ int main(){
 					case 6:
 						s = "";
 						cout << "<VIRGULA,>";
-						break;			
-					case 22:
 						break;
-					case 11:
+					case 7: 
 						s = "";
-						cout << "<SESOMENTESE, >";
+						cout << "<AND,>";
 						break;
-					case 10:
+					case 8:
 						s = "";
-						cout << "<SE,>";
+						cout << "<NOT,>";
 						break;
 					case 9:
 						s = "";
 						cout << "<IGUAL,>";
 						break;
+					case 10:
+						s = "";
+						cout << "<SE,>";
+						break;
+					case 11:
+						s = "";
+						cout << "<SESOMENTESE, >";
+						break;
+					case 14:
+						s="";
+						cout << "<TRUE,>";
+						break;
+					case 15:
+						s="";
+						cout << "<FALSE,>";
+						break;		
 					case 21:
 						if(apost)
 							apost=0;
 						else 
 							apost =1;
+						break;
+					case 22:
 						break;
 					case 23:
 						s="";
@@ -197,7 +198,6 @@ int main(){
 						cout << "eRRO" << endl;
 						exit(1);
 						break;	
-						
 				}
 			}
 		}
