@@ -5,8 +5,6 @@
 #include <string.h>
 #include <fstream>
 
-FILE *fp, *saida;
-
 using namespace std;
 
 int letra(char c){
@@ -130,7 +128,6 @@ int main(){
 				s+=c;
 				a = hash(s);
 				switch(a){
-
 					case 1:
 						s = "";
 						cout << "<LPARENTS,>";
