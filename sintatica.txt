@@ -1,0 +1,26 @@
+variavel 
+	<IDENTIFICADO,>
+
+expressão:
+	ehVariavel ehOperador ehExpressao ||  ehVariavel <PONTOVIRGULA,>
+
+atribuicao:
+	variavel <IGUAL,> expressao
+
+exibicao:
+	saida $CONT
+	$CONT: expressao virgula || expressao <PONTOVIRGULA,>
+
+entrada:
+	entrada $CONT
+	$CONT: ehVariavel ehVirgula || ehVariavel <PONTOVIRGULA,>
+	
+condicional:
+	<IF,> <LPARENTES,> ehExpressao <RPARENTES,> <LCHAVES,> Comando <RCHAVES,> CondElse
+	
+CondElse:
+	<ELSE,> <LCHAVES,> comando <RCHAVES,> 
+	
+comando:
+	expressão comando || atribuicao comando || atribuicao || expressao
+
