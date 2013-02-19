@@ -8,7 +8,7 @@
 using namespace std;
 
 int letra(char c){
-	if ((c >='A' && c<='Z') || (c>='a' && c<='z') )
+	if (c>='a' && c<='z' )
 			return 1;
 	else
 		return 0;
@@ -94,40 +94,46 @@ int main(){
 					case 12:
 						s = "";
 						cout << "<OR,>";
+						LEITOR = LEITOR--;
 						break;
 					case 16:
 						s = "";
 						cout <<  "<ELSE,>";
+						LEITOR = LEITOR--;
 						break;
 					case 17:
 						s = "";
 						cout << "<IF,>";
+						LEITOR = LEITOR--;
 						break;
 					case 18:
 						s = "";
 						cout << "<OUT,>";
+						LEITOR = LEITOR--;
 						break;
 					case 19:
 						s = "";
 						cout << "<IN,>";
+						LEITOR = LEITOR--;
 						break;
 					case 20:
-						if((s[0] >='A' && s[0]<='Z') || (s[0]>='a' && s[0]<='z')){
+						if(letra(s[0])){
 							cout << "<ID,"<< s << ">";
 							s="";
 						}
+						LEITOR = LEITOR--;
 						break;
 					case 0:
-							cout << "eRRO" << endl;
+							cout << "ERRO" << endl;
 							exit(1);
 							break;	
 					case 21:
 						break;
-				}
-				
-				s+=c;
-				a = hash(s);
-				switch(a){
+				//~ }
+				//~ 
+				//~ s+=c;
+				//~ a = hash(s);
+				//~ switch(a){
 					case 1:
 						s = "";
 						cout << "<LPARENTS,>";
