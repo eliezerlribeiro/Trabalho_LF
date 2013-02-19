@@ -11,3 +11,11 @@
 *.lai
 *.la
 *.a
+
+# binarios
+analisadorLexico
+analisadorLexicoSintatico
+
+# logs
+stdout
+stdout.txt

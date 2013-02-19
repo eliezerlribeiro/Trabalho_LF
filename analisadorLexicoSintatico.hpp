@@ -62,8 +62,10 @@ class Token {
 
 		static bool ehReservado(string);
 		static int PalavraReservada(string palavra);
-		static std::vector<Token> * Lexico(FILE *, int);
-		static std::vector<Token> * Lexico(string);
+		static void Lexico(FILE *, int);
+		static void Lexico(string);
+		
+		static void Imprime();
 };
 
 //typedef class ListaTokens std::vector<Token*>

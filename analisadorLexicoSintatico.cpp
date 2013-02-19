@@ -1,7 +1,27 @@
 #include "analisadorLexicoSintatico.hpp"
 
-int main() {
-	cout << "Ola Mundo" << endl;
+int main(int argc, char * argv[]) {
+	string * entrada;
+	string texto;
+	string arquivo;
+	if (argc > 1) {
+		arquivo = argv[1];
+		//cout << "Abrindo arquivo " << arquivo << ": " << endl;
+	} else {
+		//cout << "Entrada padrao: " << endl;
+		while (!cin.eof()) {
+			texto.push_back(cin.get());
+		}
+		
+		texto[texto.size()-1] = '\0';
+	}
+	
+	//Token::Lexico(entrada);
+	Token::Lexico(texto);
+	Token::Imprime();
+
+	cout << endl;
+	
 	return 0;
 }
 
@@ -36,7 +56,7 @@ void Token::setPosicao(int posicao) {
 std::vector<Token*> Token::ListaTokens;
 
 bool Token::ehLetra(char c) {
-	if ((c >='A' && c<='Z') || (c>='a' && c<='z') )
+	if ((c>='a' && c<='z'))
 		return 1;
 	return 0;
 }
@@ -46,7 +66,7 @@ bool Token::ehNumero(char c) {
 	return 0;
 }
 bool Token::ehBooleano(char c) {
-	if ((c == '0' && c == '1'))
+	if ((c == '0' || c == '1'))
 		return 1;
 	return 0;
 }
@@ -96,19 +116,19 @@ int Token::PalavraReservada(string palavra) {
 /**
  * Retorna uma string com um ou mais tokens
  **/
-void Lexico(FILE * Arquivo, int pos) {
+void Token::Lexico(FILE * Arquivo, int pos) {
    //por enquanto nao faz nada, mas ira chamar o Lexico passando uma string de acordo com a posicao e um arquivo
    
 }
 
-void Lexico(string palavra) {
+void Token::Lexico(string palavra) {
 
 	string s;
 	s.clear();
 	//estado inicial
 	int estado = VAZIO;
 	bool tokenizer = false;
-
+	string erro;
 	for (int i=0; i < palavra.length(); ++i) {
 		switch(estado) {
 			case VAZIO:
@@ -119,9 +139,9 @@ void Lexico(string palavra) {
 					tokenizer = false;
 				} else if (Token::ehBooleano(palavra[i])) {
 					//estado inicial eh um booleano, true ou false
-					if (palavra[i] == 0)
+					if (palavra[i] == '0')
 						estado = FALSE;
-					if (palavra[i] == 1)
+					if (palavra[i] == '1')
 						estado = TRUE;
 					tokenizer = true;
 				} else if (Token::ehOperador(palavra[i])) {
@@ -131,6 +151,8 @@ void Lexico(string palavra) {
 						estado = AND;
 					if (palavra[i] == 'v') // estado OR
 						estado = OR;
+					if (palavra[i] == '\'') // estado NOT
+						estado = NOT;
 					if (palavra[i] == '-') {
 						// estado SE
 						estado = OPERADORSE;
@@ -176,6 +198,8 @@ void Lexico(string palavra) {
 				} else {
 					//estado inicial nao identificado
 					estado = ERRO;
+					erro = "ID ";
+					erro += palavra[i];
 					tokenizer = true;
 				}
 				break;
@@ -195,19 +219,23 @@ void Lexico(string palavra) {
 				if (Token::ehLetra(palavra[i])) {
 					//acrescenta na string
 					s += palavra[i];
+					break;
 				} else if (palavra[i] == '\"') {
 					//final das aspas verifica se a palavra eh reconhecida ou nao na linguagem
-					if (s == "verdadeiro" || s == "true" ) {
+					if (s == "verdadeiro" || s == "true" || s == "v" ) {
 						estado = TRUE;
 						//palavra booleana reconhecida
-					} else if (s == "falso" || s == "false") {
+					} else if (s == "falso" || s == "false" || s == "f" ) {
 						estado = FALSE;
 						//palavra booleana reconhecida
 					} else {
 						estado = ERRO;
+						erro = "BOOLEANO_ASPAS";
 					}
 				} else {
 					estado = ERRO;
+					erro = "BOOLEANO ";
+					erro += palavra[i];
 				}
 				tokenizer = true;
 				break;
@@ -216,22 +244,29 @@ void Lexico(string palavra) {
 					estado = OPERADORSSS;
 				else {
 					estado = ERRO;
+					erro = "OPERADOR";
 					tokenizer = true;
 				}
 				break;
 			case OPERADORSE:
-				if(!palavra[i] == '>')
+				if(!palavra[i] == '>') {
 					estado = ERRO;
+					erro = "OPERADORSE";
+				}
 				tokenizer = true;
 				break;
 			case OPERADORSSS:
-				if(!palavra[i] == '>')
+				if(!palavra[i] == '>') {
 					estado = ERRO;
+					erro = "OPERADORSSS";
+				}
 				tokenizer = true;
 				break;
 			case ATRIBUICAO:
-				if (!palavra[i] == '=')
+				if (!palavra[i] == '=') {
 					estado == ERRO;
+					erro = "ATRIBUICAO";
+				}
 				tokenizer = true;
 				break;
 			default:
@@ -249,6 +284,8 @@ void Lexico(string palavra) {
 				if (estado == IDENTIFICADOR)
 					novoToken->setId(s);
 				i--;
+			} else if (estado == ERRO) {
+				novoToken->setId(erro);
 			}
 			
 			novoToken->setEstado(estado);
@@ -264,4 +301,79 @@ void Lexico(string palavra) {
 		}
 	}
 
+}
+void Token::Imprime() {
+	int estado;
+	int posicao;
+	string id;
+	string Nome;
+	for (int i=0; i < (int)Token::ListaTokens.size(); i++) {
+		estado = Token::ListaTokens[i]->getEstado();
+		posicao = Token::ListaTokens[i]->getPosicao();
+		id = Token::ListaTokens[i]->getId();
+		switch(estado) {
+			case IDENTIFICADOR:
+				Nome = id;
+				break;
+			case IF:
+				Nome = "IF";
+				break;
+			case ELSE:
+				Nome = "ELSE";
+				break;
+			case IN:
+				Nome = "IN";
+				break;
+			case OUT:
+				Nome = "OUT";
+				break;
+			case TRUE:
+				Nome = "TRUE";
+				break;
+			case FALSE:
+				Nome = "FALSE";
+				break;
+			case OR:
+				Nome = "OR";
+				break;
+			case AND:
+				Nome = "AND";
+				break;
+			case NOT:
+				Nome = "NOT";
+				break;
+			case OPERADORSE:
+				Nome = "OPERADORSE";
+				break;
+			case OPERADORSSS:
+				Nome = "OPERADORSSS";
+				break;
+			case ATRIBUICAO:
+				Nome = "ATRIBUICAO";
+				break;
+			case LPARENTS:
+				Nome = "LPARENTS";
+				break;
+			case RPARENTS:
+				Nome = "RPARENTS";
+				break;
+			case LCHAVES:
+				Nome = "LCHAVES";
+				break;
+			case RCHAVES:
+				Nome = "RCHAVES";
+				break;
+			case PONTOVIRGULA:
+				Nome = "PONTOVIRGULA";
+				break;
+			case VIRGULA:
+				Nome = "VIRGULA";
+				break;
+			case ERRO:
+				Nome = "NAOIDENTIFICADO,";
+				Nome += id;
+				break;
+		}
+		cout << "<" << Nome << "," << posicao << ">";
+	}
 }
