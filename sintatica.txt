@@ -1,26 +1,27 @@
-variavel 
-	<IDENTIFICADO,>
+variavelOuBoleano
+	<IDENTIFICADO,> || ehBoleano 
 
 expressão:
-	ehVariavel ehOperador ehExpressao ||  ehVariavel <PONTOVIRGULA,>
+	ehVariavel ehOperador ehExpressao ||  ehVariavel
 
 atribuicao:
-	variavel <IGUAL,> expressao
+	<IDENTIFICADO,> <IGUAL,> expressao  <PONTOVIRGULA,> 
 
 exibicao:
-	saida $CONT
+	saida $CONT  <PONTOVIRGULA,> 
 	$CONT: expressao virgula || expressao <PONTOVIRGULA,>
 
 entrada:
-	entrada $CONT
-	$CONT: ehVariavel ehVirgula || ehVariavel <PONTOVIRGULA,>
+	entrada $CONT  <PONTOVIRGULA,> 
+	$CONT: ehVariavel ehVirgula || ehVariavel
 	
 condicional:
 	<IF,> <LPARENTES,> ehExpressao <RPARENTES,> <LCHAVES,> Comando <RCHAVES,> CondElse
 	
 CondElse:
+	<ELSE,> <LCHAVES,> condicional comando <RCHAVES,> || 
 	<ELSE,> <LCHAVES,> comando <RCHAVES,> 
 	
 comando:
-	expressão comando || atribuicao comando || atribuicao || expressao
+	expressão comando || atribuicao comando || atribuicao || expressao || vazia
 
