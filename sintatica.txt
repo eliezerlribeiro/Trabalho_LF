@@ -1,8 +1,10 @@
-variavelOuBoleano
-	<IDENTIFICADO,> || ehBoleano 
+ehVariavelBoleano
+	<IDENTIFICADOR,> || ehBoleano 
 
 expressão:
-	ehVariavel ehOperador ehExpressao ||  ehVariavel
+	$COISA ehVariavelBoleano ehOperador ehExpressao $COISA2 || ehVariavelBoleano
+	$COISA = ( || vazio
+	$COISA2 = ) || vazio
 
 atribuicao:
 	<IDENTIFICADO,> <IGUAL,> expressao  <PONTOVIRGULA,> 
@@ -13,7 +15,7 @@ exibicao:
 
 entrada:
 	entrada $CONT  <PONTOVIRGULA,> 
-	$CONT: ehVariavel ehVirgula || ehVariavel
+	$CONT: ehVariavel ehVirgula $CONT || ehVariavel
 	
 condicional:
 	<IF,> <LPARENTES,> ehExpressao <RPARENTES,> <LCHAVES,> Comando <RCHAVES,> CondElse

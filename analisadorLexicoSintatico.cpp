@@ -49,7 +49,6 @@ void Token::setPosicao(int posicao) {
 	this->posicao = posicao;
 }
 
-
 /**
  * Inicio Metodos estaticos
  **/
@@ -120,6 +119,95 @@ void Token::Lexico(FILE * Arquivo, int pos) {
    //por enquanto nao faz nada, mas ira chamar o Lexico passando uma string de acordo com a posicao e um arquivo
    
 }
+/**
+int Token::ehIgualObjeto(int posicao) const {
+	if (Token::ListaTokens[posicao]->getEstado() == IGUAL)
+		return 1;
+	return 0;
+}
+
+
+Sintatico(int 0, VAZIO)
+
+Sintatico(int pos, int estadoFinal) {
+	entrada = Token::ListaTokens[pos]->getEstado();
+		
+		switch(entrada) {
+			case IDENTIFICADOR:
+				if (estadoFinal == VAZIO || estadoFinal == ATRIBUICAO)
+					Sintatico(pos+1, ATRIBUICAO);
+				else if
+					->RPARENTS
+						ve se tem LPARENTS na pilha
+					->VIRGULA
+					->PONTOVIRGULA
+					->OPERADOR
+					->NOT
+				}
+			case ATRIBUICAO:
+				->IDENTIFICADOR
+				->BOOLEANO
+				->LPARENTS
+			case VIRGULA
+				->IDENTIFICADOR
+				->LPARENTS
+				->BOOLEANO
+			case BOOLEANO
+				->OPERADOR
+				->NOT
+				->VIRGULA
+				->RPARENTS
+			case OPERADOR
+				->IDENTIFICADOR
+				->BOOLEANO
+				->LPARENTS
+			case NOT
+				->RPARENTS
+				->OPERADOR
+				->NOT
+			case IF
+				->LPARENTS
+			case ELSE
+				->LCHAVES
+			case IN
+				if (estadoFinal == estado)
+					Sintatico(pos+1,IDENTIFICADOR)
+					//->IDENTIFICADOR
+
+			case OUT
+				-> IDENTIFICADOR
+				-> BOOLEANO
+			case LPARENTS:
+				->IDENTIFICADOR
+				->BOOLEANO
+			case RPARENTS:
+				->NOT
+				->OPERADOR
+				->PONTOVIRGULA
+				->LCHAVES
+			case RCHAVES:
+				->RESERVADA
+				->IDENTIFICADOR
+			case LCHAVES:
+				->RESERVADA - else
+				->IDENTIFICADOR
+			case PONTOVIRGULA:
+				->IDENTIFICADOR
+				->RESERVADA - else
+
+				
+				
+		}
+	}
+		
+}
+
+void Token::Sintatico(int pos,) {
+	int estado = VAZIO;
+	int tipo;
+}
+
+**/
 
 void Token::Lexico(string palavra) {
 
