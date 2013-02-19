@@ -94,34 +94,33 @@ int main(){
 					case 12:
 						s = "";
 						cout << "<OR,>";
-						LEITOR = LEITOR--;
 						break;
 					case 16:
 						s = "";
 						cout <<  "<ELSE,>";
-						LEITOR = LEITOR--;
+						
 						break;
 					case 17:
 						s = "";
 						cout << "<IF,>";
-						LEITOR = LEITOR--;
+						
 						break;
 					case 18:
 						s = "";
 						cout << "<OUT,>";
-						LEITOR = LEITOR--;
+						
 						break;
 					case 19:
 						s = "";
 						cout << "<IN,>";
-						LEITOR = LEITOR--;
+						
 						break;
 					case 20:
 						if(letra(s[0])){
 							cout << "<ID,"<< s << ">";
 							s="";
 						}
-						LEITOR = LEITOR--;
+					
 						break;
 					case 0:
 							cout << "ERRO" << endl;
@@ -129,11 +128,11 @@ int main(){
 							break;	
 					case 21:
 						break;
-				//~ }
-				//~ 
-				//~ s+=c;
-				//~ a = hash(s);
-				//~ switch(a){
+				}
+				
+				s+=c;
+				a = hash(s);
+				switch(a){
 					case 1:
 						s = "";
 						cout << "<LPARENTS,>";

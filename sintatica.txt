@@ -19,8 +19,9 @@ condicional:
 	<IF,> <LPARENTES,> ehExpressao <RPARENTES,> <LCHAVES,> Comando <RCHAVES,> CondElse
 	
 CondElse:
+	<ELSE,> <LCHAVES,> condicional comando <RCHAVES,> || 
 	<ELSE,> <LCHAVES,> comando <RCHAVES,> 
 	
 comando:
-	expressão comando || atribuicao comando || atribuicao || expressao
+	expressão comando || atribuicao comando || atribuicao || expressao || vazia
 
