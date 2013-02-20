@@ -11,26 +11,15 @@ condicional:
 	<IF,> <LPARENTES,> expressão <RPARENTES,> <LCHAVES,> Comando <RCHAVES,> CondElse
 
 expressão:
-	ehparentes ehExpressao ehOperador ehExpressao ehparentes
-	ehExpressao ehOperador ehExpressao 
- 	ehVariavelBoleano not
-
-
-
-ehparentes:
-	<LPARENTES,> || vazio
+	E1 -> E1 (<NOT,>)* OPERADOR D || D
+ 	D  -> B | <LPARENTS,> E1 <RPARENTS,>
+ 	B  -> ehVariavelBoleano
 
 ehVariavelBoleano
 	<IDENTIFICADOR,> || ehBoleano 
 
-not:
-	ehNot || vazio
-
-	
 CondElse:
-	<ELSE,> <LCHAVES,> condicional comando <RCHAVES,> || 
-	<ELSE,> <LCHAVES,> comando <RCHAVES,> 
+	<ELSE,> <LCHAVES,> comando <RCHAVES,> || vazio
 	
 comando:
-	expressão comando || atribuicao comando || atribuicao || expressao || vazia
-
+	atribuicao comando || exibicao comando || entrada comando || condicional comando || vazio
