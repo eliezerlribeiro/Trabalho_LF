@@ -1,24 +1,37 @@
+atribuicao:
+	<IDENTIFICADO,> <IGUAL,> (expressão)* + expressao <PONTOVIRGULA,>
+
+exibicao:
+	<OUT,> (expressão <VIRGULA,>)* (expressão) <PONTOVIRGULA,> 
+
+entrada:
+	<IN,> (<IDENTIFICADO,> <VIRGULA,>)* <IDENTIFICADO,>  <PONTOVIRGULA,> 
+	
+condicional:
+	<IF,> <LPARENTES,> expressão <RPARENTES,> <LCHAVES,> Comando <RCHAVES,> CondElse
+
+expressão:
+	ehparentes ehExpressao ehOperador ehExpressao ehparentes
+	ehExpressao ehOperador ehExpressao 
+ 	ehVariavelBoleano not
+
+EXPRESSÃO:: // Outro modo de ver
+	E0 -> B = E1 | E1
+	E1 -> E1 C OPERADORES D | D
+	C -> not | vazio
+	D -> B | ( E1 )
+	B -> X 
+
+
+ehparentes:
+	<LPARENTES,> || vazio
+
 ehVariavelBoleano
 	<IDENTIFICADOR,> || ehBoleano 
 
-expressão:
-	$COISA ehVariavelBoleano ehOperador ehExpressao $COISA2 || ehVariavelBoleano
-	$COISA = ( || vazio
-	$COISA2 = ) || vazio
+not:
+	ehNot || vazio
 
-atribuicao:
-	<IDENTIFICADO,> <IGUAL,> expressao  <PONTOVIRGULA,> 
-
-exibicao:
-	saida $CONT  <PONTOVIRGULA,> 
-	$CONT: expressao virgula || expressao <PONTOVIRGULA,>
-
-entrada:
-	entrada $CONT  <PONTOVIRGULA,> 
-	$CONT: ehVariavel ehVirgula $CONT || ehVariavel
-	
-condicional:
-	<IF,> <LPARENTES,> ehExpressao <RPARENTES,> <LCHAVES,> Comando <RCHAVES,> CondElse
 	
 CondElse:
 	<ELSE,> <LCHAVES,> condicional comando <RCHAVES,> || 
