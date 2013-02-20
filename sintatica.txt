@@ -15,12 +15,6 @@ expressão:
 	ehExpressao ehOperador ehExpressao 
  	ehVariavelBoleano not
 
-EXPRESSÃO:: // Outro modo de ver
-	E0 -> B = E1 | E1
-	E1 -> E1 C OPERADORES D | D
-	C -> not | vazio
-	D -> B | ( E1 )
-	B -> X 
 
 
 ehparentes:
