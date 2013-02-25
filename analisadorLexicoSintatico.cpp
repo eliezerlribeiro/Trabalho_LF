@@ -48,6 +48,21 @@ void Token::setEstado(int estado) {
 void Token::setPosicao(int posicao) {
 	this->posicao = posicao;
 }
+void Token::setPosicao(int posicao,int token) {
+	int tam = 0;
+	switch(token) {
+		case IN:
+			tam = 2;
+		case OUT:
+			tam = 3;
+		case IF:
+			tam = 2;
+		default:
+			break;
+	}
+	posicao -= (tam ? tam - 1 : tam);
+	this->setPosicao(posicao);
+}
 
 /**
  * Inicio Metodos estaticos
@@ -112,6 +127,192 @@ int Token::PalavraReservada(string palavra) {
 	return retorno;
 }
 
+/** /
+int Token::ehIgualObjeto(int posicao) const {
+	if (Token::ListaTokens[posicao]->getEstado() == IGUAL)
+		return 1;
+	return 0;
+}
+
+//le o token atual, dependo do tipo tipo, chama a funcao propria com o proximo token como parametro na lista
+//chama
+//ListaToken::Sintatico() //processa toda lista
+//ListaToken::Sintatico(pos,TOKEN) //processa se o token da posicao é o token esperado por TOKEN
+//ListaToken::Sintatico(pos, TOKEN, FINAL) // processa tokens até o token final seja encontrado
+//retorna -1 se nao foi encontrado e a posicao na qual foi encontrado o token
+ListaToken::Sintatico(0,
+//
+**/
+
+bool Sintatico(int pos, int entrada, vector<int> * pilha) {
+	token = Token::ListaTokens[pos]->getEstado();
+		
+	switch(entrada) {
+		case VAZIO:
+			switch(token) {
+				case IDENTIFICADOR:
+					retorno = Sintatico(pos+1,token, pilha);
+					break;
+				case IN:
+					pilha.push_back(IN);
+					retorno = Sintatico(pos+1,token, pilha);
+					break;
+				case OUT:
+					pilha.push_back(OUT);
+					retorno = Sintatico(pos+1,token, pilha);
+					break;
+				case IF:
+					retorno = Sintatico(pos+1,token, pilha);
+					break;
+				default:
+					retorno = false;
+					break;
+			}
+			break;
+		case IDENTIFICADOR:
+			switch (token) {
+				case ATRIBUICAO:
+					pilha.push_back(ATRIBUICAO);
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				case RPARENTS:
+					break;
+				case VIRGULA:
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				case PONTOVIRGULA:
+					retorno = ( (int) pilha.size() == 1 ? true : false);
+					break;
+				case OPERADOR:
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				case NOT:
+					break;
+				default:
+					retorno = false;
+					break;
+			}
+			break;
+		case ATRIBUICAO:
+			->IDENTIFICADOR
+			->BOOLEANO
+			->LPARENTS
+		case VIRGULA
+			switch(token) {
+				case IDENTIFICADOR:
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				case LPARENTS:
+					pilha.push_back(LPARENTS);
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				case BOOLEANO:
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				default:
+					retorno = false;
+			}
+		case BOOLEANO
+			->OPERADOR
+			->NOT
+			->VIRGULA
+			->RPARENTS
+		case OPERADOR:
+			switch(token) {
+				case IDENTIFICADOR:
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				case BOOLEANO:
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				case LPARENTS:
+					pilha.push_back(LPARENTS);
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				default:
+					retorno = false;
+			}
+		case NOT:
+			switch(token) {
+				case RPARENTS:
+					int temp = pilha.pop_back();
+					try {
+						if (temp != LPARENTS)
+							throw 1;
+						retorno = Sintatico(pos+1,token,pilha);
+					} catch (int e) {
+						retorno = false;
+					}
+					break;
+				case OPERADOR:
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				case NOT:
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				default:
+					retorno = false;
+			}
+		case IF:
+			switch(token) {
+				case LPARENTS:
+					pilha.push_back(LPARENTS);
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				default:
+					retorno = false;
+			}
+		case ELSE:
+			switch(token) {
+				case LCHAVES:
+					pilha.push_back(LPARENTS);
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				default:
+					retorno = false;
+			}
+		case IN:
+			switch(token) {
+				case IDENTIFICADOR:
+					retorno = Sintatico(pos+1, token);
+					break;
+				default:
+					retorno = false;
+			}
+		case OUT:
+			-> IDENTIFICADOR
+			-> BOOLEANO
+		case LPARENTS:
+			->IDENTIFICADOR
+			->BOOLEANO
+		case RPARENTS:
+			->NOT
+			->OPERADOR
+			->PONTOVIRGULA
+			->LCHAVES
+		case RCHAVES:
+			->RESERVADA
+			->IDENTIFICADOR
+		case LCHAVES:
+			->RESERVADA - else
+			->IDENTIFICADOR
+		case PONTOVIRGULA:
+			->IDENTIFICADOR
+			->RESERVADA - else
+			
+				
+		}
+	}
+		
+}
+
+/**/
+
+
+
+
+
+
 /**
  * Retorna uma string com um ou mais tokens
  **/
@@ -119,95 +320,6 @@ void Token::Lexico(FILE * Arquivo, int pos) {
    //por enquanto nao faz nada, mas ira chamar o Lexico passando uma string de acordo com a posicao e um arquivo
    
 }
-/**
-int Token::ehIgualObjeto(int posicao) const {
-	if (Token::ListaTokens[posicao]->getEstado() == IGUAL)
-		return 1;
-	return 0;
-}
-
-
-Sintatico(int 0, VAZIO)
-
-Sintatico(int pos, int estadoFinal) {
-	entrada = Token::ListaTokens[pos]->getEstado();
-		
-		switch(entrada) {
-			case IDENTIFICADOR:
-				if (estadoFinal == VAZIO || estadoFinal == ATRIBUICAO)
-					Sintatico(pos+1, ATRIBUICAO);
-				else if
-					->RPARENTS
-						ve se tem LPARENTS na pilha
-					->VIRGULA
-					->PONTOVIRGULA
-					->OPERADOR
-					->NOT
-				}
-			case ATRIBUICAO:
-				->IDENTIFICADOR
-				->BOOLEANO
-				->LPARENTS
-			case VIRGULA
-				->IDENTIFICADOR
-				->LPARENTS
-				->BOOLEANO
-			case BOOLEANO
-				->OPERADOR
-				->NOT
-				->VIRGULA
-				->RPARENTS
-			case OPERADOR
-				->IDENTIFICADOR
-				->BOOLEANO
-				->LPARENTS
-			case NOT
-				->RPARENTS
-				->OPERADOR
-				->NOT
-			case IF
-				->LPARENTS
-			case ELSE
-				->LCHAVES
-			case IN
-				if (estadoFinal == estado)
-					Sintatico(pos+1,IDENTIFICADOR)
-					//->IDENTIFICADOR
-
-			case OUT
-				-> IDENTIFICADOR
-				-> BOOLEANO
-			case LPARENTS:
-				->IDENTIFICADOR
-				->BOOLEANO
-			case RPARENTS:
-				->NOT
-				->OPERADOR
-				->PONTOVIRGULA
-				->LCHAVES
-			case RCHAVES:
-				->RESERVADA
-				->IDENTIFICADOR
-			case LCHAVES:
-				->RESERVADA - else
-				->IDENTIFICADOR
-			case PONTOVIRGULA:
-				->IDENTIFICADOR
-				->RESERVADA - else
-
-				
-				
-		}
-	}
-		
-}
-
-void Token::Sintatico(int pos,) {
-	int estado = VAZIO;
-	int tipo;
-}
-
-**/
 
 void Token::Lexico(string palavra) {
 

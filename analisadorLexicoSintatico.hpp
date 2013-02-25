@@ -52,6 +52,7 @@ class Token {
 		void setId(string);
 		void setEstado(int);
 		void setPosicao(int);
+		void setPosicao(int, int);
 
 		static bool ehLetra(char);
 		static bool ehNumero(char);
