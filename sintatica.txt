@@ -10,10 +10,21 @@ entrada:
 condicional:
 	<IF,> <LPARENTES,> expressão <RPARENTES,> <LCHAVES,> Comando <RCHAVES,> CondElse
 
+
+V / ^ : associativos à esquerda 
+e1 -> e1 op e2
+-> / <-> : associativos â direita 
+e1 -> e2 op e1
+' : operador unário
+e1 -> op e2
+
 expressão:
-	E1 -> E1 (<NOT,>)* OPERADOR D || D
- 	D  -> B | <LPARENTS,> E1 <RPARENTS,>
- 	B  -> ehVariavelBoleano
+
+	E1 -> E2 <-> E1 || E2
+	E2 -> E3 -> E2 || E3
+	E3 -> E3 V E4 ||  E3 ^  E4 || E4
+	E4 -> 'B | B
+ 	B  -> ehVariavelBoleano  || <LPARENTS,> E1 <RPARENTS,>
 
 ehVariavelBoleano
 	<IDENTIFICADOR,> || ehBoleano 
@@ -23,3 +34,14 @@ CondElse:
 	
 comando:
 	atribuicao comando || exibicao comando || entrada comando || condicional comando || vazio
+
+
+
+Ordem de precedência 
+
+1 - ' (negação) 
+2 - V / ^ (disjunção/conjunção) 
+3 - -> (implicação) 
+4 - <-> (bicondicional) 
+
+Associatividade 
