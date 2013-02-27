@@ -23,7 +23,7 @@ expressão:
 	E1 -> E2 <-> E1 || E2
 	E2 -> E3 -> E2 || E3
 	E3 -> E3 V E4 ||  E3 ^  E4 || E4
-	E4 -> 'B | B
+	E4 -> B' | B
  	B  -> ehVariavelBoleano  || <LPARENTS,> E1 <RPARENTS,>
 
 ehVariavelBoleano

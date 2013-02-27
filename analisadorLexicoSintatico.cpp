@@ -143,15 +143,26 @@ int Token::ehIgualObjeto(int posicao) const {
 ListaToken::Sintatico(0,
 //
 **/
+bool Token::AnalisaSintatico() {
+	for (int i = 0; i < (int) Token::ListaTokens.size(); i++) {
+		if (!Sintatico(i,VAZIO,pilha))
+			return false;
+		
+	}
+	return true;
+}
 
-bool Sintatico(int pos, int entrada, vector<int> * pilha) {
+bool Token::Sintatico(int pos, int entrada, vector<int> * pilha) {
 	token = Token::ListaTokens[pos]->getEstado();
 		
 	switch(entrada) {
 		case VAZIO:
 			switch(token) {
 				case IDENTIFICADOR:
-					retorno = Sintatico(pos+1,token, pilha);
+					if (Token::ListaTokens[pos+1]->getEstado() == ATRIBUICAO)
+						retorno = Sintatico(pos+2,token, pilha);
+					else
+						retorno = false;
 					break;
 				case IN:
 					pilha.push_back(IN);
@@ -162,6 +173,7 @@ bool Sintatico(int pos, int entrada, vector<int> * pilha) {
 					retorno = Sintatico(pos+1,token, pilha);
 					break;
 				case IF:
+					pilha.push_back(IF);
 					retorno = Sintatico(pos+1,token, pilha);
 					break;
 				default:
@@ -171,17 +183,19 @@ bool Sintatico(int pos, int entrada, vector<int> * pilha) {
 			break;
 		case IDENTIFICADOR:
 			switch (token) {
-				case ATRIBUICAO:
-					pilha.push_back(ATRIBUICAO);
-					retorno = Sintatico(pos+1,token,pilha);
-					break;
+				//~ case ATRIBUICAO:
+					//~ pilha.push_back(ATRIBUICAO);
+					//~ retorno = Sintatico(pos+1,token,pilha);
+					//~ break;
 				case RPARENTS:
 					break;
 				case VIRGULA:
 					retorno = Sintatico(pos+1,token,pilha);
 					break;
 				case PONTOVIRGULA:
-					retorno = ( (int) pilha.size() == 1 ? true : false);
+					
+					//~ retorno = ( (int) pilha.size() == 1 ? true : false);
+					retorno = true;
 					break;
 				case OPERADOR:
 					retorno = Sintatico(pos+1,token,pilha);
@@ -194,9 +208,22 @@ bool Sintatico(int pos, int entrada, vector<int> * pilha) {
 			}
 			break;
 		case ATRIBUICAO:
-			->IDENTIFICADOR
-			->BOOLEANO
-			->LPARENTS
+			switch(token) {
+				case IDENTIFICADOR:
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				case BOOLEANO:
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				case LPARENTS:
+					pilha.push_back(LPARENTS);
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				default:
+					retorno = false;
+					break;
+			}
+			break;
 		case VIRGULA
 			switch(token) {
 				case IDENTIFICADOR:
@@ -212,11 +239,32 @@ bool Sintatico(int pos, int entrada, vector<int> * pilha) {
 				default:
 					retorno = false;
 			}
-		case BOOLEANO
-			->OPERADOR
-			->NOT
-			->VIRGULA
-			->RPARENTS
+			break;
+		case BOOLEANO:
+			switch(token) {
+				case OPERADOR:
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				case NOT:
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				case VIRGULA:
+					retorno = Sintatico(pos+1,token,pilha);
+					break;
+				case RPARENTS:
+					int temp = pilha.pop_back();
+					try {
+						if (temp != LPARENTS)
+							throw 1;
+						retorno = Sintatico(pos+1,token,pilha);
+					} catch (int e) {
+						retorno = false;
+					}
+					break;
+				default:
+					retorno = false;
+			}
+			break;
 		case OPERADOR:
 			switch(token) {
 				case IDENTIFICADOR:
@@ -232,6 +280,7 @@ bool Sintatico(int pos, int entrada, vector<int> * pilha) {
 				default:
 					retorno = false;
 			}
+			break;
 		case NOT:
 			switch(token) {
 				case RPARENTS:
@@ -253,6 +302,7 @@ bool Sintatico(int pos, int entrada, vector<int> * pilha) {
 				default:
 					retorno = false;
 			}
+			break;
 		case IF:
 			switch(token) {
 				case LPARENTS:
@@ -262,15 +312,17 @@ bool Sintatico(int pos, int entrada, vector<int> * pilha) {
 				default:
 					retorno = false;
 			}
+			break;
 		case ELSE:
 			switch(token) {
 				case LCHAVES:
-					pilha.push_back(LPARENTS);
+					pilha.push_back(LCHAVES);
 					retorno = Sintatico(pos+1,token,pilha);
 					break;
 				default:
 					retorno = false;
 			}
+			break;
 		case IN:
 			switch(token) {
 				case IDENTIFICADOR:
@@ -279,40 +331,79 @@ bool Sintatico(int pos, int entrada, vector<int> * pilha) {
 				default:
 					retorno = false;
 			}
+			break;
 		case OUT:
-			-> IDENTIFICADOR
-			-> BOOLEANO
+			switch(token) {
+				case IDENTIFICADOR:
+					retorno = Sintatico(pos+1, token);
+					break;
+				case BOOLEANO:
+					retorno = Sintatico(pos+1, token);
+					break;
+				default:
+					retorno = false;
+			}
+			break;
 		case LPARENTS:
-			->IDENTIFICADOR
-			->BOOLEANO
+			switch(token) {
+				case IDENTIFICADOR:
+					retorno = Sintatico(pos+1, token);
+					break;
+				case BOOLEANO:
+					retorno = Sintatico(pos+1, token);
+					break;
+				default:
+					retorno = false;
+			}
+			break;
 		case RPARENTS:
-			->NOT
-			->OPERADOR
-			->PONTOVIRGULA
-			->LCHAVES
+			switch(token) {
+				case NOT:
+					retorno = Sintatico(pos+1, token);
+					break;
+				case OPERADOR:
+					break;
+				case PONTOVIRGULA:
+					retorno = ( (int) pilha.size() == 1 ? true : false);
+					break;
+				case LCHAVES:
+					pilha.push_back(LCHAVES);
+					retorno = Sintatico(pos+1, token);
+					break;
+				default:
+					retorno = false;
+			}
+			break;
 		case RCHAVES:
-			->RESERVADA
-			->IDENTIFICADOR
+			switch(token) {
+				case ELSE:
+					retorno = Sintatico(pos+1, token);
+					break;
+				default:
+					int temp = pilha.pop_back();
+					try {
+						if (temp != RCHAVES)
+							throw 1;
+						retorno = Sintatico(pos+1,token,pilha);
+					} catch (int e) {
+						retorno = false;
+					}
+			}
+			break;
 		case LCHAVES:
-			->RESERVADA - else
-			->IDENTIFICADOR
-		case PONTOVIRGULA:
-			->IDENTIFICADOR
-			->RESERVADA - else
-			
-				
-		}
-	}
+			switch(token) {
+				case :
+					break;
+				case IDENTIFICADOR
+					break;
+				default:
+					retorno = false;
+			}
+			break;
 		
+	}
 }
-
-/**/
-
-
-
-
-
-
+**/
 /**
  * Retorna uma string com um ou mais tokens
  **/
