@@ -9,37 +9,41 @@
 using namespace std;
 
 enum {
-	VAZIO = 0, // estado inicial
-	LETRA, //letra :3
-	IDENTIFICADOR, //qualquer combinacao de uma palavra iniciando por letra e numero
-	BOOLEANO, //"verdadeiro "true" "falso" "false"
+	VAZIO = 0,
+	IDENTIFICADOR,
+	LETRA,
+	NUMERO,
+	BOOLEANO,
+	TRUE,
+	FALSE,
+	RESERVADO,
 	IF,
 	ELSE,
 	IN,
 	OUT,
-	TRUE, //0
-	FALSE, //1
-	OR, // v
-	AND, // ^
-	NOT, // '
-	OPERADOR, //<
-	OPERADORSE, //->
-	OPERADORSSS, //<->
-	SEPARADOR, // \n \t \0 " "(espaco)
-	ATRIBUICAO, // :
-	LPARENTS, // (
-	RPARENTS, // )
-	LCHAVES, // {
-	RCHAVES, // }
-	PONTOVIRGULA, // ;
-	VIRGULA, // ,
-	OUTRO, // ?
-	ERRO // ??
+	OPERADOR,
+	OR,
+	AND,
+	NOT,
+	OPERADORSE,
+	OPERADORSSS,
+	SEPARADOR,
+	ATRIBUICAO,
+	LPARENTS,
+	RPARENTS,
+	LCHAVES,
+	RCHAVES,
+	PONTOVIRGULA,
+	VIRGULA,
+	OUTRO,
+	ERRO
 };
 
 class Token {
 	public:
-		static std::vector<Token*> ListaTokens;
+		static std::vector<Token*> listaTokens;
+		static std::vector<Token*> pilhaLexico;
+		static std::vector<int> pilhaSintatico;
 	private:
 		string id;
 		int estado;
@@ -60,13 +64,24 @@ class Token {
 		static bool ehOperador(char);
 		static bool ehSeparador(char);
 		static bool ehBloco(char);
+		
+		static int SintaticoPontoVirgula();
+		static int SintaticoRParents();
+
+		static int ehOperador(int token);
+		static int ehReservado(int token);
 
 		static bool ehReservado(string);
 		static int PalavraReservada(string palavra);
 		static void Lexico(FILE *, int);
 		static void Lexico(string);
-		
+
+		static bool Sintatico(int entrada);
+		static bool AnalisaSintatico();
+
+
 		static void Imprime();
+		static string ImprimeToken(int token, string id);
 };
 
 //typedef class ListaTokens std::vector<Token*>

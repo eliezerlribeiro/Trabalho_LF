@@ -1,5 +1,9 @@
 #include "analisadorLexicoSintatico.hpp"
 
+std::vector<Token*> Token::listaTokens;
+std::vector<Token*> Token::pilhaLexico;
+std::vector<int> Token::pilhaSintatico;
+
 int main(int argc, char * argv[]) {
 	string * entrada;
 	string texto;
@@ -18,7 +22,19 @@ int main(int argc, char * argv[]) {
 	
 	//Token::Lexico(entrada);
 	Token::Lexico(texto);
+	for (int i =(int) Token::listaTokens.size() - 1 ; i >= 0 ; i--) {
+		Token * token;
+		token = Token::listaTokens[i];
+		Token::pilhaLexico.push_back(token);
+	}
 	Token::Imprime();
+	
+	cout << endl;
+	
+	bool retSintatico = Token::AnalisaSintatico();
+	
+	cout << "Entrada " << (retSintatico ? "valida" : "invalida");
+	
 
 	cout << endl;
 	
@@ -67,7 +83,6 @@ void Token::setPosicao(int posicao,int token) {
 /**
  * Inicio Metodos estaticos
  **/
-std::vector<Token*> Token::ListaTokens;
 
 bool Token::ehLetra(char c) {
 	if ((c>='a' && c<='z'))
@@ -84,8 +99,13 @@ bool Token::ehBooleano(char c) {
 		return 1;
 	return 0;
 }
+int Token::ehOperador(int token) {
+	if ((token == AND ) || (token == OR) || (token == OPERADORSSS) || token == OPERADORSE)
+		return OPERADOR;
+	return token;
+}
 bool Token::ehOperador(char c) {
-	if ((c == '^') || (c == 'v') || (c == '-') || (c == '<') || (c == '\'') || (c == ':'))
+	if ((c == '^') || (c == 'V') || (c == '-') || (c == '<') || (c == '\'') || (c == ':'))
 		return 1;
 	return 0;
 }
@@ -126,55 +146,97 @@ int Token::PalavraReservada(string palavra) {
 		retorno = OUT;
 	return retorno;
 }
-
-/** /
-int Token::ehIgualObjeto(int posicao) const {
-	if (Token::ListaTokens[posicao]->getEstado() == IGUAL)
-		return 1;
-	return 0;
+int Token::ehReservado(int token) {
+	if ((token == IF ) || (token == ELSE) || (token == IN) || token == OUT)
+		return RESERVADO;
+	return token;
 }
 
-//le o token atual, dependo do tipo tipo, chama a funcao propria com o proximo token como parametro na lista
-//chama
-//ListaToken::Sintatico() //processa toda lista
-//ListaToken::Sintatico(pos,TOKEN) //processa se o token da posicao é o token esperado por TOKEN
-//ListaToken::Sintatico(pos, TOKEN, FINAL) // processa tokens até o token final seja encontrado
-//retorna -1 se nao foi encontrado e a posicao na qual foi encontrado o token
-ListaToken::Sintatico(0,
-//
-**/
+
+
+int Token::SintaticoRParents() {
+	
+	bool retorno;
+	int temp = Token::pilhaSintatico.back();
+	Token::pilhaSintatico.pop_back();
+	
+	try {
+		if (temp != LPARENTS)
+			throw 1;
+	} catch (int e) {
+		retorno = false;
+	}
+	
+	return retorno;
+}
+
+int Token::SintaticoPontoVirgula() {
+	
+	bool retorno = false;
+	int temp = Token::pilhaSintatico.back();
+	temp = ehReservado(temp);
+
+	switch(temp) {
+		case ATRIBUICAO:
+			Token::pilhaSintatico.pop_back();
+			retorno = true;
+		case RESERVADO:
+			Token::pilhaSintatico.pop_back();
+			retorno = true;
+		default:
+			retorno = false;
+	}
+	
+	return retorno;
+}
+/**/
 bool Token::AnalisaSintatico() {
-	for (int i = 0; i < (int) Token::ListaTokens.size(); i++) {
-		if (!Sintatico(i,VAZIO,pilha))
+	while((int) Token::pilhaLexico.size()) {
+		if (!Token::Sintatico(VAZIO))
 			return false;
-		
 	}
 	return true;
 }
 
-bool Token::Sintatico(int pos, int entrada, vector<int> * pilha) {
-	token = Token::ListaTokens[pos]->getEstado();
-		
+/**/
+bool Token::Sintatico(int entrada) {
+	int temp = Token::pilhaLexico.back()->getEstado();
+	Token::pilhaLexico.pop_back();
+	//string aux = Token::ImprimeToken(token,"a");
+	//cout << endl << aux << endl;
+	bool retorno = false;
+	int token = ehOperador(temp);
+	token = ehReservado(temp);
+	//cout << "entrada: " << Token::ImprimeToken(entrada,"") << " token " << Token::ImprimeToken(token,"") << endl;
 	switch(entrada) {
 		case VAZIO:
 			switch(token) {
 				case IDENTIFICADOR:
-					if (Token::ListaTokens[pos+1]->getEstado() == ATRIBUICAO)
-						retorno = Sintatico(pos+2,token, pilha);
+					token = Token::pilhaLexico.back()->getEstado();
+					if (token == ATRIBUICAO) {
+						Token::pilhaLexico.pop_back();
+						retorno = Sintatico(token);
+					}
 					else
 						retorno = false;
 					break;
-				case IN:
-					pilha.push_back(IN);
-					retorno = Sintatico(pos+1,token, pilha);
+				case RESERVADO:
+					Token::pilhaSintatico.push_back(token);
+					retorno = Sintatico(token);
 					break;
-				case OUT:
-					pilha.push_back(OUT);
-					retorno = Sintatico(pos+1,token, pilha);
-					break;
-				case IF:
-					pilha.push_back(IF);
-					retorno = Sintatico(pos+1,token, pilha);
+				case RCHAVES:
+					token = Token::pilhaLexico.back()->getEstado();
+					if (token == ELSE) {
+						Token::pilhaSintatico.pop_back();
+						retorno = Sintatico(token);
+					} else {
+						
+						if ((Token::pilhaSintatico.back() == IF) || (Token::pilhaSintatico.back() == ELSE))
+							retorno = true;
+						else
+							retorno = false;
+							Token::pilhaSintatico.clear();
+					}
 					break;
 				default:
 					retorno = false;
@@ -183,24 +245,23 @@ bool Token::Sintatico(int pos, int entrada, vector<int> * pilha) {
 			break;
 		case IDENTIFICADOR:
 			switch (token) {
-				//~ case ATRIBUICAO:
-					//~ pilha.push_back(ATRIBUICAO);
-					//~ retorno = Sintatico(pos+1,token,pilha);
-					//~ break;
 				case RPARENTS:
+					retorno = (SintaticoRParents() ? Sintatico(token) : false);
+
 					break;
 				case VIRGULA:
-					retorno = Sintatico(pos+1,token,pilha);
+					retorno = Sintatico(token);
 					break;
 				case PONTOVIRGULA:
-					
-					//~ retorno = ( (int) pilha.size() == 1 ? true : false);
+					retorno = SintaticoPontoVirgula();
+					//retorno = ( (int) Token::pilhaSintatico.size() == 0 ? true : false);
 					retorno = true;
 					break;
 				case OPERADOR:
-					retorno = Sintatico(pos+1,token,pilha);
+					retorno = Sintatico(token);
 					break;
 				case NOT:
+					retorno = Sintatico(token);
 					break;
 				default:
 					retorno = false;
@@ -210,31 +271,31 @@ bool Token::Sintatico(int pos, int entrada, vector<int> * pilha) {
 		case ATRIBUICAO:
 			switch(token) {
 				case IDENTIFICADOR:
-					retorno = Sintatico(pos+1,token,pilha);
+					retorno = Sintatico(token);
 					break;
 				case BOOLEANO:
-					retorno = Sintatico(pos+1,token,pilha);
+					retorno = Sintatico(token);
 					break;
 				case LPARENTS:
-					pilha.push_back(LPARENTS);
-					retorno = Sintatico(pos+1,token,pilha);
+					Token::pilhaSintatico.push_back(LPARENTS);
+					retorno = Sintatico(token);
 					break;
 				default:
 					retorno = false;
 					break;
 			}
 			break;
-		case VIRGULA
+		case VIRGULA:
 			switch(token) {
 				case IDENTIFICADOR:
-					retorno = Sintatico(pos+1,token,pilha);
+					retorno = Sintatico(token);
 					break;
 				case LPARENTS:
-					pilha.push_back(LPARENTS);
-					retorno = Sintatico(pos+1,token,pilha);
+					Token::pilhaSintatico.push_back(LPARENTS);
+					retorno = Sintatico(token);
 					break;
 				case BOOLEANO:
-					retorno = Sintatico(pos+1,token,pilha);
+					retorno = Sintatico(token);
 					break;
 				default:
 					retorno = false;
@@ -243,61 +304,53 @@ bool Token::Sintatico(int pos, int entrada, vector<int> * pilha) {
 		case BOOLEANO:
 			switch(token) {
 				case OPERADOR:
-					retorno = Sintatico(pos+1,token,pilha);
+					retorno = Sintatico(token);
 					break;
 				case NOT:
-					retorno = Sintatico(pos+1,token,pilha);
+					retorno = Sintatico(token);
 					break;
 				case VIRGULA:
-					retorno = Sintatico(pos+1,token,pilha);
+					retorno = Sintatico(token);
 					break;
 				case RPARENTS:
-					int temp = pilha.pop_back();
-					try {
-						if (temp != LPARENTS)
-							throw 1;
-						retorno = Sintatico(pos+1,token,pilha);
-					} catch (int e) {
-						retorno = false;
-					}
+					retorno = (SintaticoRParents() ? Sintatico(token) : false);
 					break;
 				default:
 					retorno = false;
 			}
 			break;
 		case OPERADOR:
-			switch(token) {
-				case IDENTIFICADOR:
-					retorno = Sintatico(pos+1,token,pilha);
-					break;
-				case BOOLEANO:
-					retorno = Sintatico(pos+1,token,pilha);
-					break;
-				case LPARENTS:
-					pilha.push_back(LPARENTS);
-					retorno = Sintatico(pos+1,token,pilha);
-					break;
-				default:
-					retorno = false;
+			if (Token::pilhaSintatico.back() != IN) {
+				switch(token) {
+					case IDENTIFICADOR:
+						retorno = Sintatico(token);
+						break;
+					case BOOLEANO:
+						retorno = Sintatico(token);
+						break;
+					case LPARENTS:
+						Token::pilhaSintatico.push_back(LPARENTS);
+						retorno = Sintatico(token);
+						break;
+					default:
+						retorno = false;
+				}
 			}
 			break;
 		case NOT:
 			switch(token) {
 				case RPARENTS:
-					int temp = pilha.pop_back();
-					try {
-						if (temp != LPARENTS)
-							throw 1;
-						retorno = Sintatico(pos+1,token,pilha);
-					} catch (int e) {
-						retorno = false;
-					}
+					retorno = (Token::SintaticoRParents() ? Sintatico(token) : false);
 					break;
 				case OPERADOR:
-					retorno = Sintatico(pos+1,token,pilha);
+					retorno = Sintatico(token);
 					break;
 				case NOT:
-					retorno = Sintatico(pos+1,token,pilha);
+					retorno = Sintatico(token);
+					break;
+				case PONTOVIRGULA:
+					retorno = ( (int) Token::pilhaSintatico.size() == 0 ? true : false);
+					//retorno = true;
 					break;
 				default:
 					retorno = false;
@@ -306,8 +359,8 @@ bool Token::Sintatico(int pos, int entrada, vector<int> * pilha) {
 		case IF:
 			switch(token) {
 				case LPARENTS:
-					pilha.push_back(LPARENTS);
-					retorno = Sintatico(pos+1,token,pilha);
+					Token::pilhaSintatico.push_back(LPARENTS);
+					retorno = Sintatico(token);
 					break;
 				default:
 					retorno = false;
@@ -316,8 +369,8 @@ bool Token::Sintatico(int pos, int entrada, vector<int> * pilha) {
 		case ELSE:
 			switch(token) {
 				case LCHAVES:
-					pilha.push_back(LCHAVES);
-					retorno = Sintatico(pos+1,token,pilha);
+					Token::pilhaSintatico.push_back(LCHAVES);
+					retorno = Sintatico(token);
 					break;
 				default:
 					retorno = false;
@@ -326,7 +379,7 @@ bool Token::Sintatico(int pos, int entrada, vector<int> * pilha) {
 		case IN:
 			switch(token) {
 				case IDENTIFICADOR:
-					retorno = Sintatico(pos+1, token);
+					retorno = Sintatico(token);
 					break;
 				default:
 					retorno = false;
@@ -335,75 +388,63 @@ bool Token::Sintatico(int pos, int entrada, vector<int> * pilha) {
 		case OUT:
 			switch(token) {
 				case IDENTIFICADOR:
-					retorno = Sintatico(pos+1, token);
+					retorno = Sintatico(token);
 					break;
 				case BOOLEANO:
-					retorno = Sintatico(pos+1, token);
+					retorno = Sintatico(token);
 					break;
 				default:
 					retorno = false;
 			}
 			break;
 		case LPARENTS:
-			switch(token) {
-				case IDENTIFICADOR:
-					retorno = Sintatico(pos+1, token);
-					break;
-				case BOOLEANO:
-					retorno = Sintatico(pos+1, token);
-					break;
-				default:
-					retorno = false;
+			if (Token::pilhaSintatico.back() != IN) {
+				switch(token) {
+					case IDENTIFICADOR:
+						retorno = Sintatico(token);
+						break;
+					case BOOLEANO:
+						retorno = Sintatico(token);
+						break;
+					default:
+						retorno = false;
+				}
 			}
 			break;
 		case RPARENTS:
 			switch(token) {
 				case NOT:
-					retorno = Sintatico(pos+1, token);
+					retorno = Sintatico(token);
 					break;
 				case OPERADOR:
 					break;
 				case PONTOVIRGULA:
-					retorno = ( (int) pilha.size() == 1 ? true : false);
+					retorno = ( (int) Token::pilhaSintatico.size() == 0 ? true : false);
+					//retorno = true;
 					break;
 				case LCHAVES:
-					pilha.push_back(LCHAVES);
-					retorno = Sintatico(pos+1, token);
+					Token::pilhaSintatico.push_back(LCHAVES);
+					retorno = Sintatico(token);
 					break;
 				default:
 					retorno = false;
-			}
-			break;
-		case RCHAVES:
-			switch(token) {
-				case ELSE:
-					retorno = Sintatico(pos+1, token);
-					break;
-				default:
-					int temp = pilha.pop_back();
-					try {
-						if (temp != RCHAVES)
-							throw 1;
-						retorno = Sintatico(pos+1,token,pilha);
-					} catch (int e) {
-						retorno = false;
-					}
 			}
 			break;
 		case LCHAVES:
 			switch(token) {
-				case :
-					break;
-				case IDENTIFICADOR
+				case IDENTIFICADOR:
+					retorno = Sintatico(token);
 					break;
 				default:
 					retorno = false;
 			}
 			break;
-		
 	}
+	return retorno;
 }
-**/
+
+
+/**/
 /**
  * Retorna uma string com um ou mais tokens
  **/
@@ -440,7 +481,7 @@ void Token::Lexico(string palavra) {
 					tokenizer = true;
 					if (palavra[i] == '^') // estado AND
 						estado = AND;
-					if (palavra[i] == 'v') // estado OR
+					if (palavra[i] == 'V') // estado OR
 						estado = OR;
 					if (palavra[i] == '\'') // estado NOT
 						estado = NOT;
@@ -582,7 +623,7 @@ void Token::Lexico(string palavra) {
 			novoToken->setEstado(estado);
 			novoToken->setPosicao(i);
 			//insere na lista
-			Token::ListaTokens.push_back(novoToken);
+			Token::listaTokens.push_back(novoToken);
 			//retorna a iteracao 1 passo, para o estado inicial vazio 
 			//reseta o estado
 			s.clear();
@@ -598,73 +639,81 @@ void Token::Imprime() {
 	int posicao;
 	string id;
 	string Nome;
-	for (int i=0; i < (int)Token::ListaTokens.size(); i++) {
-		estado = Token::ListaTokens[i]->getEstado();
-		posicao = Token::ListaTokens[i]->getPosicao();
-		id = Token::ListaTokens[i]->getId();
-		switch(estado) {
-			case IDENTIFICADOR:
-				Nome = id;
-				break;
-			case IF:
-				Nome = "IF";
-				break;
-			case ELSE:
-				Nome = "ELSE";
-				break;
-			case IN:
-				Nome = "IN";
-				break;
-			case OUT:
-				Nome = "OUT";
-				break;
-			case TRUE:
-				Nome = "TRUE";
-				break;
-			case FALSE:
-				Nome = "FALSE";
-				break;
-			case OR:
-				Nome = "OR";
-				break;
-			case AND:
-				Nome = "AND";
-				break;
-			case NOT:
-				Nome = "NOT";
-				break;
-			case OPERADORSE:
-				Nome = "OPERADORSE";
-				break;
-			case OPERADORSSS:
-				Nome = "OPERADORSSS";
-				break;
-			case ATRIBUICAO:
-				Nome = "ATRIBUICAO";
-				break;
-			case LPARENTS:
-				Nome = "LPARENTS";
-				break;
-			case RPARENTS:
-				Nome = "RPARENTS";
-				break;
-			case LCHAVES:
-				Nome = "LCHAVES";
-				break;
-			case RCHAVES:
-				Nome = "RCHAVES";
-				break;
-			case PONTOVIRGULA:
-				Nome = "PONTOVIRGULA";
-				break;
-			case VIRGULA:
-				Nome = "VIRGULA";
-				break;
-			case ERRO:
-				Nome = "NAOIDENTIFICADO,";
-				Nome += id;
-				break;
-		}
+	for (int i=0; i < (int)Token::listaTokens.size(); i++) {
+		estado = Token::listaTokens[i]->getEstado();
+		posicao = Token::listaTokens[i]->getPosicao();
+		id = Token::listaTokens[i]->getId();
+		Nome = Token::ImprimeToken(estado,id);
 		cout << "<" << Nome << "," << posicao << ">";
 	}
+}
+
+string Token::ImprimeToken(int token,string id) {
+	
+	string Nome;
+	Nome.clear();
+	switch(token) {
+		case IDENTIFICADOR:
+			Nome = id;
+			break;
+		case IF:
+			Nome = "IF";
+			break;
+		case ELSE:
+			Nome = "ELSE";
+			break;
+		case IN:
+			Nome = "IN";
+			break;
+		case OUT:
+			Nome = "OUT";
+			break;
+		case TRUE:
+			Nome = "TRUE";
+			break;
+		case FALSE:
+			Nome = "FALSE";
+			break;
+		case OR:
+			Nome = "OR";
+			break;
+		case AND:
+			Nome = "AND";
+			break;
+		case NOT:
+			Nome = "NOT";
+			break;
+		case OPERADORSE:
+			Nome = "OPERADORSE";
+			break;
+		case OPERADORSSS:
+			Nome = "OPERADORSSS";
+			break;
+		case ATRIBUICAO:
+			Nome = "ATRIBUICAO";
+			break;
+		case LPARENTS:
+			Nome = "LPARENTS";
+			break;
+		case RPARENTS:
+			Nome = "RPARENTS";
+			break;
+		case LCHAVES:
+			Nome = "LCHAVES";
+			break;
+		case RCHAVES:
+			Nome = "RCHAVES";
+			break;
+		case PONTOVIRGULA:
+			Nome = "PONTOVIRGULA";
+			break;
+		case VIRGULA:
+			Nome = "VIRGULA";
+			break;
+		case ERRO:
+			Nome = "NAOIDENTIFICADO,";
+			Nome += id;
+			break;
+	}
+	return Nome;
 }
