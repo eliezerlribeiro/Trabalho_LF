@@ -36,7 +36,8 @@ enum {
 	PONTOVIRGULA,
 	VIRGULA,
 	OUTRO,
-	ERRO
+	ERRO,
+	INICIO
 };
 
 class Token {
@@ -68,8 +69,9 @@ class Token {
 		static int SintaticoPontoVirgula();
 		static int SintaticoRParents();
 
-		static int ehOperador(int token);
-		static int ehReservado(int token);
+		static int ehOperador(int);
+		static int ehReservado(int);
+		static int ehBooleano(int);
 
 		static bool ehReservado(string);
 		static int PalavraReservada(string palavra);
