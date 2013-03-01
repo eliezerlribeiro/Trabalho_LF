@@ -1,3 +1,29 @@
+P = {
+	INICIO -> <IDENTIFICADOR> ATRIBUIÇÃO || <OUT> EXIBICAO || <IN> ENTRADA|| <IF> CONDICIONAL || VAZIO
+
+	ATRIBUIÇÃO -> <IGUAL> E1  <PONTOVIRGULA>
+	
+	ENTRADA -> <IDENTIFICADOR> CONTROLE_ENTRADA 
+	CONTROLE_ENTRADA -> <VIRGULA> ENTRADA || <PONTOVIRGULA> 
+	
+	CONDICIONAL -> <LPARENTES> E1 <RPARENTES>  <LCHAVES,> INICIO <RCHAVES,> COND_ELSE
+	COND_ELSE -> <ELSE,> <LCHAVES,> INICIO <RCHAVES,> || VAZIO
+	
+	EXIBIÇÃO -> E1 CONTROLE_EXIBICAO 
+	CONTROLE_EXIBICAO -> <VIRGULA> EXIBICAO || <PONTOVIRGULA,> 
+	
+	E1 -> E2 <-> E1 || E2
+	E2 -> E3 -> E2 || E3
+	E3 -> E3 V E4 ||  E3 ^  E4 || E4
+	E4 -> B' || B
+ 	B  -> VAR_BOL  || <LPARENTS,> E1 <RPARENTS,>
+	
+	VAR_BOL -> <IDENTIFICADOR> || <BOLEANO>
+	
+
+	}
+
+
 atribuicao:
 	<IDENTIFICADO,> <IGUAL,> (expressão)* + expressao <PONTOVIRGULA,>
 
@@ -10,21 +36,12 @@ entrada:
 condicional:
 	<IF,> <LPARENTES,> expressão <RPARENTES,> <LCHAVES,> Comando <RCHAVES,> CondElse
 
-
-V / ^ : associativos à esquerda 
-e1 -> e1 op e2
--> / <-> : associativos â direita 
-e1 -> e2 op e1
-' : operador unário
-e1 -> op e2
-
 expressão:
-
 	E1 -> E2 <-> E1 || E2
 	E2 -> E3 -> E2 || E3
 	E3 -> E3 V E4 ||  E3 ^  E4 || E4
 	E4 -> B' | B
- 	B  -> ehVariavelBoleano  || <LPARENTS,> E1 <RPARENTS,>
+ 	B  -> VAR_BOL  || <LPARENTS,> E1 <RPARENTS,>
 
 ehVariavelBoleano
 	<IDENTIFICADOR,> || ehBoleano 
@@ -34,14 +51,3 @@ CondElse:
 	
 comando:
 	atribuicao comando || exibicao comando || entrada comando || condicional comando || vazio
-
-
-
-Ordem de precedência 
-
-1 - ' (negação) 
-2 - V / ^ (disjunção/conjunção) 
-3 - -> (implicação) 
-4 - <-> (bicondicional) 
-
-Associatividade 
