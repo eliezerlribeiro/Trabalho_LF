@@ -20,7 +20,8 @@ P = {
 	E4 -> B' || B
  	B  -> VAR_BOL  || <LPARENTS,> E1 <RPARENTS,>
 	
-	VAR_BOL -> <IDENTIFICADOR> || <BOLEANO>
+	VAR_BOL -> <IDENTIFICADOR> || <TRUE> || <FALSE>
+	
 	
 
 	}
