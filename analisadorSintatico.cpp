@@ -22,6 +22,8 @@ bool Sintatico::OperaSintatico(int entrada) {
 
 	token = ehOperador(token);
 	int temp = ehReservado(token);
+	//cout << "entrada: " << Token::ImprimeToken(entrada,"IDENTIFICADOR") << " token: " << token << " " << Token::ImprimeToken(token,"IDENTIFICADOR") << endl;
+	//if ((int)this->pilhaSintatico.size() > 0 ) cout << "pilha sintatico: " << Token::ImprimeToken(this->pilhaSintatico.back(),"IDENTIFICADOR") << endl;
 	switch(entrada) {
 		case VAZIO:
 			switch(temp) {
@@ -78,6 +80,7 @@ bool Sintatico::OperaSintatico(int entrada) {
 				case RPARENTS:
 					retorno = (SintaticoRParents() ? OperaSintatico(token) : false);
 					break;
+				case ATRIBUICAO:
 				case VIRGULA:
 				case OPERADOR:
 				case NOT:
@@ -90,12 +93,16 @@ bool Sintatico::OperaSintatico(int entrada) {
 			break;
 		case ATRIBUICAO:
 			token = ehBooleano(token);
+
 			switch(token) {
 				case IDENTIFICADOR:
+					retorno = OperaSintatico(token);
+					break;
 				case BOOLEANO:
 					retorno = OperaSintatico(token);
 					break;
 				case LPARENTS:
+					if (this->pilhaSintatico.back() == ATRIBUICAO) this->pilhaSintatico.pop_back();
 					this->pilhaSintatico.push_back(LPARENTS);
 					retorno = OperaSintatico(token);
 					break;
@@ -206,7 +213,7 @@ bool Sintatico::OperaSintatico(int entrada) {
 			}
 			break;
 		case LPARENTS:
-			if (this->pilhaSintatico.back() != IN) { // aqui deve ter erro
+			if (this->pilhaSintatico.back() != IN) {
 				token = ehBooleano(token);
 				switch(token) {
 					case LPARENTS:
@@ -253,14 +260,19 @@ bool Sintatico::OperaSintatico(int entrada) {
 			break;
 	}
 	if (retorno == false) {
+		//cout << " FALSO!" << endl;
+	/**
 		cout << "entrada: " << Token::ImprimeToken(entrada,"IDENTIFICADOR") << " token: " << token << " " << Token::ImprimeToken(token,"IDENTIFICADOR") << endl;
 		cout << "pilha sintatico: " << Token::ImprimeToken(this->pilhaSintatico.back(),"IDENTIFICADOR") << endl;
 		cout << "pilha lexico: " << Token::ImprimeToken(this->listaTokens.back()->getPosicao(),"IDENTIFICADOR") << endl;
+	**/
 	}
 
 	return retorno;
 }
 bool Sintatico::AnalisaSintatico() {
+	//inicializa a pilha com Z0
+	this->pilhaSintatico.push_back(INICIO);
 	while((int) this->listaTokens.size()) {
 		if (this->listaTokens.back()->getEstado() == INICIO){
 			if ( this->pilhaSintatico.size() != 0)

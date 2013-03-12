@@ -18,6 +18,7 @@ int main(int argc, char * argv[]) {
 	
 	Lexico * mLexico = new Lexico(texto);
 	mLexico->Imprime();
+	cout << endl;
 	std::vector<Token*> listaTokens = mLexico->AnalisaLexico();
 	Sintatico * mSintatico = new Sintatico(listaTokens);
 	cout << "Saida: " << mSintatico->AnalisaSintatico() << endl;

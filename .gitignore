@@ -15,6 +15,7 @@
 # binarios
 analisadorLexico
 analisadorLexicoSintatico
+analisador
 
 # logs
 stdout
