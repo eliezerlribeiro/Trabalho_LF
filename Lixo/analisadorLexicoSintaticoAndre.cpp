@@ -186,8 +186,6 @@ bool Token::Sintatico(int entrada) {
 	int token = Token::pilhaLexico.back()->getEstado();
 	if (token == INICIO) return true;
 	Token::pilhaLexico.pop_back();
-	//string aux = Token::ImprimeToken(token,"a");
-	//cout << endl << aux << endl;
 	bool retorno = false;
 	token = ehOperador(token);
 	int temp = ehReservado(token);
@@ -298,6 +296,8 @@ bool Token::Sintatico(int entrada) {
 					break;
 				case VIRGULA:
 					retorno = Sintatico(token);
+				case PONTOVIRGULA:
+					retorno = SintaticoPontoVirgula();
 					break;
 				case RPARENTS:
 					retorno = (SintaticoRParents() ? Sintatico(token) : false);
@@ -375,7 +375,6 @@ bool Token::Sintatico(int entrada) {
 			}
 			break;
 		case LPARENTS:
-			if (Token::pilhaSintatico.back() != IN) { // aqui deve ter erro
 				token = ehBooleano(token);
 				switch(token) {
 					case LPARENTS:
@@ -385,17 +384,19 @@ bool Token::Sintatico(int entrada) {
 					case BOOLEANO:
 						retorno = Sintatico(token);
 						break;
+					case LPARENTS:
+						Token::pilhaSintatico.push_back(LPARENTS);
+						retorno = Sintatico(token);
+					break;
 					default:
 						retorno = false;
 				}
-			}
 			break;
 		case RPARENTS:
 			switch(token) {
 				case NOT:
 				case OPERADOR:
 					retorno = Sintatico(token);
-					break;
 					break;
 				case PONTOVIRGULA:
 					retorno = SintaticoPontoVirgula();
