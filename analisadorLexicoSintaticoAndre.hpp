@@ -59,28 +59,24 @@ class Token {
 		void setPosicao(int);
 		void setPosicao(int, int);
 
+		static void Lexico(FILE *, int);
+		static void Lexico(string);
 		static bool ehLetra(char);
 		static bool ehNumero(char);
 		static bool ehBooleano(char);
 		static bool ehOperador(char);
 		static bool ehSeparador(char);
 		static bool ehBloco(char);
-		
+		static bool ehReservado(string);
+		static int PalavraReservada(string palavra);
+
+		static bool AnalisaSintatico();
+		static bool Sintatico(int entrada);
 		static int SintaticoPontoVirgula();
 		static int SintaticoRParents();
-
 		static int ehOperador(int);
 		static int ehReservado(int);
 		static int ehBooleano(int);
-
-		static bool ehReservado(string);
-		static int PalavraReservada(string palavra);
-		static void Lexico(FILE *, int);
-		static void Lexico(string);
-
-		static bool Sintatico(int entrada);
-		static bool AnalisaSintatico();
-
 
 		static void Imprime();
 		static string ImprimeToken(int token, string id);

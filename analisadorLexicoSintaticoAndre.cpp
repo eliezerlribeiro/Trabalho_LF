@@ -13,7 +13,7 @@ int main(int argc, char * argv[]) {
 		//cout << "Abrindo arquivo " << arquivo << ": " << endl;
 	} else {
 		//cout << "Entrada padrao: " << endl;
-		while (!cin.eof()) {
+		while (cin.good()) {
 			texto.push_back(cin.get());
 		}
 		
@@ -46,44 +46,6 @@ int main(int argc, char * argv[]) {
 	return 0;
 }
 
-Token::Token() {
-	this->setId("");
-	this->setEstado(0);
-	this->setPosicao(0);
-}
-string Token::getId() {
-	return this->id;
-}
-int Token::getPosicao() {
-	return this->posicao;
-}
-int Token::getEstado() {
-	return this->estado;
-}
-void Token::setId(string id) {
-	this->id = id;
-}
-void Token::setEstado(int estado) {
-	this->estado = estado;
-}
-void Token::setPosicao(int posicao) {
-	this->posicao = posicao;
-}
-void Token::setPosicao(int posicao,int token) {
-	int tam = 0;
-	switch(token) {
-		case IN:
-			tam = 2;
-		case OUT:
-			tam = 3;
-		case IF:
-			tam = 2;
-		default:
-			break;
-	}
-	posicao -= (tam ? tam - 1 : tam);
-	this->setPosicao(posicao);
-}
 
 /**
  * Inicio Metodos estaticos
@@ -208,10 +170,14 @@ int Token::SintaticoPontoVirgula() {
 /**/
 bool Token::AnalisaSintatico() {
 	while((int) Token::pilhaLexico.size()) {
-		if (Token::pilhaLexico.back()->getEstado() == INICIO) return true;
+		if (Token::pilhaLexico.back()->getEstado() == INICIO){
+			if ( Token::pilhaSintatico.size() != 0)
+				return false;
+			return true;	
+		}
 		if (!Token::Sintatico(VAZIO))
 			return false;
-	}
+	}	
 	return true;
 }
 
@@ -275,20 +241,14 @@ bool Token::Sintatico(int entrada) {
 			break;
 		case IDENTIFICADOR:
 			switch (token) {
-				case RPARENTS:
-					retorno = (SintaticoRParents() ? Sintatico(token) : false);
-
-					break;
-				case VIRGULA:
-					retorno = Sintatico(token);
-					break;
 				case PONTOVIRGULA:
 					retorno = SintaticoPontoVirgula();
-					//retorno = ( (int) Token::pilhaSintatico.size() == 0 ? true : false);
 					break;
+				case RPARENTS:
+					retorno = (SintaticoRParents() ? Sintatico(token) : false);
+					break;
+				case VIRGULA:
 				case OPERADOR:
-					retorno = Sintatico(token);
-					break;
 				case NOT:
 					retorno = Sintatico(token);
 					break;
@@ -301,8 +261,6 @@ bool Token::Sintatico(int entrada) {
 			token = ehBooleano(token);
 			switch(token) {
 				case IDENTIFICADOR:
-					retorno = Sintatico(token);
-					break;
 				case BOOLEANO:
 					retorno = Sintatico(token);
 					break;
@@ -334,10 +292,9 @@ bool Token::Sintatico(int entrada) {
 		case BOOLEANO:
 			switch(token) {
 				case OPERADOR:
-					retorno = Sintatico(token);
-					break;
 				case NOT:
-					retorno = Sintatico(token);
+				case PONTOVIRGULA:
+					retorno = SintaticoPontoVirgula();
 					break;
 				case VIRGULA:
 					retorno = Sintatico(token);
@@ -372,16 +329,12 @@ bool Token::Sintatico(int entrada) {
 				case RPARENTS:
 					retorno = (Token::SintaticoRParents() ? Sintatico(token) : false);
 					break;
-				case OPERADOR:
-					retorno = Sintatico(token);
-					break;
-				case NOT:
-					retorno = Sintatico(token);
-					break;
 				case PONTOVIRGULA:
 					retorno = SintaticoPontoVirgula();
-					//retorno = ( (int) Token::pilhaSintatico.size() == 0 ? true : false);
-					//retorno = true;
+					break;
+				case OPERADOR:
+				case NOT:
+					retorno = Sintatico(token);
 					break;
 				default:
 					retorno = false;
@@ -406,19 +359,14 @@ bool Token::Sintatico(int entrada) {
 			}
 			break;
 		case IN:
-			switch(token) {
-				case IDENTIFICADOR:
-					retorno = Sintatico(token);
-					break;
-				default:
-					retorno = false;
-			}
+			if (token == IDENTIFICADOR)
+				retorno = Sintatico(token);
+			else 
+				retorno = false;
 			break;
 		case OUT:
 			switch(token) {
 				case IDENTIFICADOR:
-					retorno = Sintatico(token);
-					break;
 				case BOOLEANO:
 					retorno = Sintatico(token);
 					break;
@@ -430,9 +378,10 @@ bool Token::Sintatico(int entrada) {
 			if (Token::pilhaSintatico.back() != IN) { // aqui deve ter erro
 				token = ehBooleano(token);
 				switch(token) {
-					case IDENTIFICADOR:
+					case LPARENTS:
+						Token::pilhaSintatico.push_back(LPARENTS);
 						retorno = Sintatico(token);
-						break;
+					case IDENTIFICADOR:
 					case BOOLEANO:
 						retorno = Sintatico(token);
 						break;
@@ -444,18 +393,19 @@ bool Token::Sintatico(int entrada) {
 		case RPARENTS:
 			switch(token) {
 				case NOT:
+				case OPERADOR:
 					retorno = Sintatico(token);
 					break;
-				case OPERADOR:
 					break;
 				case PONTOVIRGULA:
 					retorno = SintaticoPontoVirgula();
-					//retorno = ( (int) Token::pilhaSintatico.size() == 0 ? true : false);
-					//retorno = true;
 					break;
 				case LCHAVES:
 					Token::pilhaSintatico.push_back(LCHAVES);
 					retorno = Sintatico(VAZIO);
+					break;
+				case RPARENTS:
+					retorno = (Token::SintaticoRParents() ? Sintatico(token) : false);
 					break;
 				default:
 					retorno = false;

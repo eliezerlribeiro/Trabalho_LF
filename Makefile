@@ -4,21 +4,31 @@
 CC=g++
 
 # Objects
-OBJETOS = analisadorLexico.o
+OBJETOS = analisadorLexico.o analisadorSintatico.o analisador.o
 
-EXECUTAVEL = anaisadorLexico
+EXECUTAVEL = analisador
 
 all: $(OBJETOS) 
 	$(CC) $(OBJETOS) -o $(EXECUTAVEL)
 
-laboB: analisadorLexicoSintatico.o analisadorLexicoSintatico.hpp analisadorLexicoSintatico.cpp
-	$(CC) analisadorLexicoSintatico.o -o analisadorLexicoSintatico
-
-analisador: anaisadorLexico.cpp
+analisadorLexico: analisador.hpp analisadorLexico.cpp
 	$(CC) -c analisadorLexico.cpp
+analisadorSintatico: analisador.hpp analisadorSintatico.cpp
+	$(CC) -c analisadorSintatico.cpp
+analisador.o: analisador.hpp analisador.cpp
+	$(CC) -c analisador.cpp
 
-analisadorLexico:
-	$(CC) -c analisadorLexicoSintatico.cpp
+
+
+
+
+ladoB: analisadorLexicoSintaticoAndre.hpp analisadorLexicoSintaticoAndre.cpp
+	$(CC) -c analisadorLexicoSintaticoAndre.cpp
+	$(CC) analisadorLexicoSintatico.o -o analisadorLexicoSintaticoAndre
+
+ladoC: analisadorLexicoEli.cpp
+	$(CC) -c analisadorLexicoEli.cpp
+	$(CC) analisadorLexicoEli.o -o analisadorLexicoEli
 
 #limpeza
 clean:
