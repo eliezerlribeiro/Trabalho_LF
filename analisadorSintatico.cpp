@@ -10,264 +10,228 @@ Sintatico::Sintatico(std::vector<Token*> listaTokens) {
 	this->pilhaSintatico.clear();
 }
 
-bool Sintatico::OperaSintatico(int entrada) {
+bool Sintatico::OperaSintatico() {
 	
-	bool retorno = false;
-
-	int token = ((int)this->listaTokens.size() > 0 ? this->listaTokens.back()->getEstado() : ERRO);
-	if (token == ERRO) return false;
-	if (token == INICIO) return true;
-	//cout << "token: " << token << " this->listaTokens.size(): " << this->listaTokens.size() << endl;
-	this->listaTokens.pop_back();
-
-	token = ehOperador(token);
-	int temp = ehReservado(token);
-	//cout << "entrada: " << Token::ImprimeToken(entrada,"IDENTIFICADOR") << " token: " << token << " " << Token::ImprimeToken(token,"IDENTIFICADOR") << endl;
-	//if ((int)this->pilhaSintatico.size() > 0 ) cout << "pilha sintatico: " << Token::ImprimeToken(this->pilhaSintatico.back(),"IDENTIFICADOR") << endl;
-	switch(entrada) {
-		case VAZIO:
-			switch(temp) {
+	bool retorno = true;
+	if ((int)this->pilhaSintatico.size() <= 0) retorno = false;
+	else {
+		//le o proximo token da fita
+		int token = this->listaTokens.back()->getEstado();
+		if (token == ERRO) retorno = false;
+		else if (token == INICIO && this->pilhaSintatico > 0 && this->pilhaSintatico->back()) retorno = true;
+		else {
+			//consome o topo da pilha
+			int topoPilha = this->pilhaSintatico.back();
+			this->pilhaSintatico.pop_back();
+			
+			//trata o token antes de testar
+			token = ehBooleano(token);
+			token = ehOperador(token);
+			//testa o token
+			
+			
+			
+			//chamada recursiva no final do switch case
+			//retorno = (retorno ? this->OperaSintatico(token) : retorno);
+			
+			
+			switch(token) {
 				case IDENTIFICADOR:
-					token = this->listaTokens.back()->getEstado();
-					if (token == ATRIBUICAO) {
+					if (topoPilha == INICIO || topoPilha == LCHAVES) {
+						this->pilhaSintatico.push_back(topoPilha);
 						this->pilhaSintatico.push_back(token);
-						this->listaTokens.pop_back();
-						retorno = OperaSintatico(token);
+					} else if (topoPilha == LPARENTS) {
+						//this->pilhaSintatico.push_back(topoPilha);
+						this->pilhaSintatico.push_back(BOOLVAR);
+					} else if (topoPilha == OPERADOR) {
+						this->pilhaSintatico.push_back(topoPilha);
+						this->pilhaSintatico.push_back(BOOLVAR);
+					} else if (topoPilha == IF || topoPilha == ELSE ) {
+						this->pilhaSintatico.push_back(token);
+					} else {
+						retorno = false;
 					}
+					break;
+					
+				case OUT:
+				case IN:
+					//IN e OUT possuem a mesma caracteristica quando sao lidos da fita, apenas se colocam na pilha
+					if (topoPilha == INICIO || topoPilha == LCHAVES) {
+						if (topoPilha != IF) this->pilhaSintatico.push_back(topoPilha);
+						this->pilhaSintatico.push_back(token);
+					} else if (topoPilha == IF || topoPilha == ELSE ) {
+						this->pilhaSintatico.push_back(token);
+					} else {
+						retorno = false;
+					}
+					break;
+					
+				case IF:
+					if (topoPilha == INICIO || topoPilha == LCHAVES) {
+						this->pilhaSintatico.push_back(topoPilha);
+						this->pilhaSintatico.push_back(token);
+					} else if (topoPilha == IF || topoPilha == ELSE ) {
+						this->pilhaSintatico.push_back(token);
+					} else {
+						retorno = false;
+					}
+					break;
+				case ELSE:
+					if (topoPilha == IF) {
+						this->pilhaSintatico.push_back(token);
+					} else {
+						retorno = false;
+					}
+					break;
+					
+				case RCHAVES:
+					if (topoPilha == IF || topoPilha == ELSE) {
+						this->pilhaSintatico.push_back(topoPilha);
+						this->pilhaSintatico.push_back(token);
+					} else
+						retorno = false;
+					break;
+					
+				case ATRIBUICAO:
+					if (topoPilha == IDENTIFICADOR)
+						this->pilhaSintatico.push_back(token);
 					else
 						retorno = false;
 					break;
-				case RESERVADO:
-					if (token == ELSE)
+				
+				case OPERADOR:
+					if (topoPilha == BOOLVAR)
+						this->pilhaSintatico.push_back(token);
+					else
+						retorno = false;
+					break;
+				
+				case LPARENTS:
+					if (topoPilha == IF) {
+						this->pilhaSintatico.push_back(topoPilha);
+						this->pilhaSintatico.push_back(token);
+					} else if (topoPilha == OPERADOR) {
+						this->pilhaSintatico.push_back(BOOLVAR);
+						this->pilhaSintatico.push_back(token);
+					} else
+						retorno = false;
+					break;
+					
+				case RPARENTS:
+					if (topoPilha == BOOLVAR)
+						retorno = true;
+					else
+						retorno = false;
+					break;
+				
+				case 
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				case INICIO:
+					//fita no inicio pode ler:
+					//coloca o token na pilha IF, IN, OUT, ATRIBUICAO
+					if (token == IF || token == IN || token == OUT || token == IDENTIFICADOR) {
+						this->pilhaSintatico.push_back(topoPilha);
+						this->pilhaSintatico.push_back(token);
+						retorno = this->OperaSintatico();
+					} else
+						retorno = false;
+					break;
+					
+				case IF:
+					//	CONDICIONAL -> <LPARENTES> E1 <RPARENTES>  <LCHAVES,> COMANDO <RCHAVES,> COND_ELSE
+					//token lido so pode ser LPARENTS
+					if (token == LPARENTS) {
+						//coloca IF no topo da pilha
+						this->pilhaSintatico.push_back(topoPilha);
+						this->pilhaSintatico.push_back(token);
+						retorno = this->OperaSintatico();
+					} else
+						retorno = false;
+					break;
+				
+				case LPARENTS:
+					//pilha tem um lparents, entao soh pode ser uma variavel booleana (BOOLVAR) ou outro lparents
+					if (token == IDENTIFICADOR || ehBooleano(token) == BOOLEANO || token == LPARENTS) {
+						this->pilhaSintatico.push_back(topoPilha);
+						this->pilhaSintatico.push_back(token);
+						retorno = this->OperaSintatico();
+					} else
+						retorno = false;
+					break;
+					
+				case ELSE:
+					//topo da pilha else, token lido soh pode ser LCHAVES
+					if (token == LCHAVES)
+						retorno = this->OperaSintatico();
+					else
+						retorno = false;
+					break;
+					
+				case BOOLVAR:
+					//caso seja uma variavel booleana pode ler um operador ou not ou LPARENTS
+					if (ehOperador(token) == OPERADOR || token == NOT) {
+						//metodo ehOperador(token), retorna o enum OPERADOR caso seja um dos operadores ou o enum original caso contrario
+						this->pilhaSintatico.push_back(ehOperador(token));
+						retorno = this->OperaSintatico();
+					} else if (token == LPARENTS) {
+						this->pilhaSintatico.push_back(token);
+						retorno = this->OperaSintatico();
+					} else
+						retorno = false;
+					
+					break;
+					
+				case OPERADOR:
+					//caso leia um operador da pilha, soh pode ler um IDENTIFICADOR ou LPARENTS
+					if (token == IDENTIFICADOR || token == LPARENTS || ehBooleano(token) == BOOLEANO) {
+						this->pilhaSintatico.push_back( (token == IDENTIFICADOR || ehBooleano(token) == BOOLEANO  ? BOOLVAR : token) );
+						retorno = this->OperaSintatico();
+					} else
+						retorno = false;
+					
+				case IDENTIFICADOR:
+					//topo da pilha identificador soh pode ser ATRIBUICAO
+					
+					
+					
+					
+					
+					if (token == IDENTIFICADOR || token == LCHAVES || ehReservado(token) || ehBooleano(token) || token == PONTOVIRGULA)
 						retorno = false;
 					else {
-						this->pilhaSintatico.push_back(token);
-						retorno = OperaSintatico(token);
-					}
-					break;
-				case RCHAVES:
-					if (this->pilhaSintatico.back() == LCHAVES) {
-						this->pilhaSintatico.pop_back(); // tira lchaves
-						if ((this->pilhaSintatico.back() == IF) || (this->pilhaSintatico.back() == ELSE)) {
-							if (this->listaTokens.back()->getEstado() == ELSE) {
-								this->listaTokens.pop_back();
-								this->pilhaSintatico.pop_back();
-								this->pilhaSintatico.push_back(ELSE);
-								retorno = OperaSintatico(ELSE);
-							}
-							else {
-								this->pilhaSintatico.pop_back(); //tira if ou else
-								retorno = OperaSintatico(VAZIO);
-							}
+						if (topoPilha == INICIO || topoPilha == LPARENTS) {
+							this->pilhaSintatico.push_back(topoPilha);
+							//se a pilha conter LPARENTS ou INICIO, eh erro sintatico, tratamento: b;
+							if(token == PONTOVIRGULA) retorno = false;
 						}
-						else retorno = false;
-						retorno = OperaSintatico(VAZIO);
-
+						if (retorno) {
+							//coloca o identificador na pilha
+							this->pilhaSintatico.push_back(IDENTIFICADOR);
+							
+							retorno = this->OperaSintatico(token);
+						}
 					}
 					break;
-				case INICIO:
-					retorno = true;
-				default:
-					retorno = false;
-					break;
-			}
-			break;
-		case IDENTIFICADOR:
-			switch (token) {
-				case PONTOVIRGULA:
-					retorno = SintaticoPontoVirgula();
-					break;
-				case RPARENTS:
-					retorno = (SintaticoRParents() ? OperaSintatico(token) : false);
-					break;
-				case ATRIBUICAO:
-				case VIRGULA:
-				case OPERADOR:
-				case NOT:
-					retorno = OperaSintatico(token);
-					break;
-				default:
-					retorno = false;
-					break;
-			}
-			break;
-		case ATRIBUICAO:
-			token = ehBooleano(token);
-
-			switch(token) {
-				case IDENTIFICADOR:
-					retorno = OperaSintatico(token);
-					break;
+					
 				case BOOLEANO:
-					retorno = OperaSintatico(token);
-					break;
-				case LPARENTS:
-					if (this->pilhaSintatico.back() == ATRIBUICAO) this->pilhaSintatico.pop_back();
-					this->pilhaSintatico.push_back(LPARENTS);
-					retorno = OperaSintatico(token);
-					break;
-				default:
-					retorno = false;
-					break;
+					//leu 
 			}
-			break;
-		case VIRGULA:
-			switch(token) {
-				case IDENTIFICADOR:
-					retorno = OperaSintatico(token);
-					break;
-				case LPARENTS:
-					this->pilhaSintatico.push_back(LPARENTS);
-					retorno = OperaSintatico(token);
-					break;
-				case BOOLEANO:
-					retorno = OperaSintatico(token);
-					break;
-				default:
-					retorno = false;
-			}
-			break;
-		case BOOLEANO:
-			switch(token) {
-				case OPERADOR:
-				case NOT:
-				case PONTOVIRGULA:
-					retorno = SintaticoPontoVirgula();
-					break;
-				case VIRGULA:
-					retorno = OperaSintatico(token);
-					break;
-				case RPARENTS:
-					retorno = (SintaticoRParents() ? OperaSintatico(token) : false);
-					break;
-				default:
-					retorno = false;
-			}
-			break;
-		case OPERADOR:
-			if (this->pilhaSintatico.back() != IN) {
-				switch(token) {
-					case IDENTIFICADOR:
-						retorno = OperaSintatico(token);
-						break;
-					case BOOLEANO:
-						retorno = OperaSintatico(token);
-						break;
-					case LPARENTS:
-						this->pilhaSintatico.push_back(LPARENTS);
-						retorno = OperaSintatico(token);
-						break;
-					default:
-						retorno = false;
-				}
-			}
-			break;
-		case NOT:
-			switch(token) {
-				case RPARENTS:
-					retorno = (this->SintaticoRParents() ? OperaSintatico(token) : false);
-					break;
-				case PONTOVIRGULA:
-					retorno = SintaticoPontoVirgula();
-					break;
-				case OPERADOR:
-				case NOT:
-					retorno = OperaSintatico(token);
-					break;
-				default:
-					retorno = false;
-			}
-			break;
-		case IF:
-			switch(token) {
-				case LPARENTS:
-					this->pilhaSintatico.push_back(LPARENTS);
-					retorno = OperaSintatico(token);
-					break;
-				default:
-					retorno = false;
-			}
-			break;
-		case ELSE:
-			switch(token) {
-				case LCHAVES:
-					this->pilhaSintatico.push_back(LCHAVES);
-					retorno = OperaSintatico(VAZIO);
-					break;
-			}
-			break;
-		case IN:
-			if (token == IDENTIFICADOR)
-				retorno = OperaSintatico(token);
-			else 
-				retorno = false;
-			break;
-		case OUT:
-			switch(token) {
-				case IDENTIFICADOR:
-				case BOOLEANO:
-					retorno = OperaSintatico(token);
-					break;
-				default:
-					retorno = false;
-			}
-			break;
-		case LPARENTS:
-			if (this->pilhaSintatico.back() != IN) {
-				token = ehBooleano(token);
-				switch(token) {
-					case LPARENTS:
-						this->pilhaSintatico.push_back(LPARENTS);
-						retorno = OperaSintatico(token);
-					case IDENTIFICADOR:
-					case BOOLEANO:
-						retorno = OperaSintatico(token);
-						break;
-					default:
-						retorno = false;
-				}
-			}
-			break;
-		case RPARENTS:
-			switch(token) {
-				case NOT:
-				case OPERADOR:
-					retorno = OperaSintatico(token);
-					break;
-					break;
-				case PONTOVIRGULA:
-					retorno = SintaticoPontoVirgula();
-					break;
-				case LCHAVES:
-					this->pilhaSintatico.push_back(LCHAVES);
-					retorno = OperaSintatico(VAZIO);
-					break;
-				case RPARENTS:
-					retorno = (this->SintaticoRParents() ? OperaSintatico(token) : false);
-					break;
-				default:
-					retorno = false;
-			}
-			break;
-		case LCHAVES:
-			switch(token) {
-				case IDENTIFICADOR:
-					retorno = OperaSintatico(token);
-					break;
-				default:
-					retorno = false;
-			}
-			break;
+		}
 	}
-	if (retorno == false) {
-		//cout << " FALSO!" << endl;
-	/**
-		cout << "entrada: " << Token::ImprimeToken(entrada,"IDENTIFICADOR") << " token: " << token << " " << Token::ImprimeToken(token,"IDENTIFICADOR") << endl;
-		cout << "pilha sintatico: " << Token::ImprimeToken(this->pilhaSintatico.back(),"IDENTIFICADOR") << endl;
-		cout << "pilha lexico: " << Token::ImprimeToken(this->listaTokens.back()->getPosicao(),"IDENTIFICADOR") << endl;
-	**/
-	}
-
+	
+	
+	
 	return retorno;
 }
 bool Sintatico::AnalisaSintatico() {
@@ -279,7 +243,7 @@ bool Sintatico::AnalisaSintatico() {
 				return false;
 			return true;
 		}
-		if (!OperaSintatico(VAZIO))
+		if (!OperaSintatico())
 			return false;
 	}	
 	return true;

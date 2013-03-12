@@ -37,6 +37,7 @@ enum {
 	RCHAVES,
 	PONTOVIRGULA,
 	VIRGULA,
+	BOOLVAR,
 	OUTRO,
 	ERRO,
 	INICIO
@@ -92,7 +93,7 @@ public:
 	
 public:	
 	bool AnalisaSintatico();
-	bool OperaSintatico(int entrada);
+	bool OperaSintatico();
 
 private:
 	int SintaticoPontoVirgula();
