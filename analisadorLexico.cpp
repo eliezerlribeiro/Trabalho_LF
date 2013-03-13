@@ -9,6 +9,7 @@ Lexico::Lexico(FILE * Arquivo, int pos) {
  **/
 Lexico::Lexico(string palavra) {
 
+	this->lexicoErro == false;
 	string s;
 	s.clear();
 	//estado inicial
@@ -172,6 +173,8 @@ Lexico::Lexico(string palavra) {
 				i--;
 			} else if (estado == ERRO) {
 				novoToken->setId(erro);
+				this->lexicoErro = true;
+				return;
 			}
 			
 			novoToken->setEstado(estado);
@@ -273,11 +276,11 @@ std::vector<Token *> Lexico::AnalisaLexico() {
 
 	retorno.push_back(inicio);
 
-
 	for (int i =(int) this->listaTokens.size() - 1 ; i >= 0 ; i--) {
 		//Token * token = new Token(&listaTokens[i]);
 		Token * token;
 		token = listaTokens[i];
+		//cout << "Copiando Token: " << Token::ImprimeToken(token->getEstado(), token->getId()) << endl;
 		retorno.push_back(token);
 	}
 	return retorno;

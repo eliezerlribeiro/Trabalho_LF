@@ -38,9 +38,14 @@ enum {
 	PONTOVIRGULA,
 	VIRGULA,
 	BOOLVAR,
+	BOOLCOND,
+	CONDICIONAL,
+	PARENTSIN,
+	ENTRADA,
 	OUTRO,
 	ERRO,
-	INICIO
+	INICIO,
+	SAIR
 };
 
 class Token {
@@ -67,6 +72,9 @@ private:
 public:
 	Lexico(FILE *, int);
 	Lexico(string);
+
+	static bool debug;
+	bool lexicoErro;
 	
 	std::vector<Token *> AnalisaLexico();
 private:
@@ -90,6 +98,8 @@ private:
 public:	
 	Sintatico();
 	Sintatico(std::vector<Token*> listaTokens);
+
+	static bool debug;
 	
 public:	
 	bool AnalisaSintatico();

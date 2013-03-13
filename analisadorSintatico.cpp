@@ -13,23 +13,31 @@ Sintatico::Sintatico(std::vector<Token*> listaTokens) {
 bool Sintatico::OperaSintatico() {
 	
 	bool retorno = true;
+	int tokenOri = 0;
 	if ((int)this->pilhaSintatico.size() <= 0) retorno = false;
 	else {
 		//le o proximo token da fita
 		int token = this->listaTokens.back()->getEstado();
-		if (token == ERRO) retorno = false;
-		else if (token == INICIO && this->pilhaSintatico > 0 && this->pilhaSintatico->back()) retorno = true;
+		if (Sintatico::debug) cout << "FITA: " << Token::ImprimeToken(token, "ID") << endl;
+		this->listaTokens.pop_back();
+		//cout << "Leu: " << Token::ImprimeToken(token, "ID") << endl;
+		if (token == ERRO) {
+			 retorno = false;
+		 }
+		else if (token == INICIO && (int)this->pilhaSintatico.size() == 1) retorno = true;
 		else {
 			//consome o topo da pilha
 			int topoPilha = this->pilhaSintatico.back();
 			this->pilhaSintatico.pop_back();
 			
+			if (Sintatico::debug) cout << "PILHA: " << Token::ImprimeToken(topoPilha, "ID") << endl;
+			if (Sintatico::debug) cout << "Tamanho Pilha: " << this->pilhaSintatico.size() << endl << endl;
 			//trata o token antes de testar
+			tokenOri = token;
 			token = ehBooleano(token);
 			token = ehOperador(token);
+			//cout << "Leu Depois: " << Token::ImprimeToken(token, "ID") << endl;
 			//testa o token
-			
-			
 			
 			//chamada recursiva no final do switch case
 			//retorno = (retorno ? this->OperaSintatico(token) : retorno);
@@ -38,28 +46,56 @@ bool Sintatico::OperaSintatico() {
 			switch(token) {
 				case IDENTIFICADOR:
 					if (topoPilha == INICIO || topoPilha == LCHAVES) {
+
 						this->pilhaSintatico.push_back(topoPilha);
 						this->pilhaSintatico.push_back(token);
-					} else if (topoPilha == LPARENTS) {
+
+					} else if (topoPilha == LPARENTS || topoPilha == OUT) {
+
+						this->pilhaSintatico.push_back(BOOLVAR);
+
+					} else if (topoPilha == IN || topoPilha == VIRGULA) {
+
+						this->pilhaSintatico.push_back(ENTRADA);
+
+					} else if (topoPilha == PARENTSIN) {
+
+						this->pilhaSintatico.push_back(topoPilha);
+						this->pilhaSintatico.push_back(ENTRADA);
+
+					} else if (topoPilha == OUT) {
+
+						this->pilhaSintatico.push_back(BOOLVAR);
+
+					} else if (topoPilha == OPERADOR) {
+
 						//this->pilhaSintatico.push_back(topoPilha);
 						this->pilhaSintatico.push_back(BOOLVAR);
-					} else if (topoPilha == OPERADOR) {
-						this->pilhaSintatico.push_back(topoPilha);
-						this->pilhaSintatico.push_back(BOOLVAR);
+
 					} else if (topoPilha == IF || topoPilha == ELSE ) {
+
 						this->pilhaSintatico.push_back(token);
+
 					} else {
+
 						retorno = false;
+
 					}
 					break;
-					
+				case BOOLEANO:
+					if (topoPilha == ATRIBUICAO || topoPilha == OPERADOR) {
+						this->pilhaSintatico.push_back(BOOLVAR);
+					} else
+						retorno = false;
+					break;
 				case OUT:
 				case IN:
 					//IN e OUT possuem a mesma caracteristica quando sao lidos da fita, apenas se colocam na pilha
 					if (topoPilha == INICIO || topoPilha == LCHAVES) {
-						if (topoPilha != IF) this->pilhaSintatico.push_back(topoPilha);
+						this->pilhaSintatico.push_back(topoPilha);
 						this->pilhaSintatico.push_back(token);
-					} else if (topoPilha == IF || topoPilha == ELSE ) {
+						retorno = true;
+					} else if (topoPilha == IF || topoPilha == CONDICIONAL ) {
 						this->pilhaSintatico.push_back(token);
 					} else {
 						retorno = false;
@@ -77,19 +113,11 @@ bool Sintatico::OperaSintatico() {
 					}
 					break;
 				case ELSE:
-					if (topoPilha == IF) {
-						this->pilhaSintatico.push_back(token);
+					if (topoPilha == CONDICIONAL) {
+						this->pilhaSintatico.push_back(CONDICIONAL);
 					} else {
 						retorno = false;
 					}
-					break;
-					
-				case RCHAVES:
-					if (topoPilha == IF || topoPilha == ELSE) {
-						this->pilhaSintatico.push_back(topoPilha);
-						this->pilhaSintatico.push_back(token);
-					} else
-						retorno = false;
 					break;
 					
 				case ATRIBUICAO:
@@ -100,133 +128,97 @@ bool Sintatico::OperaSintatico() {
 					break;
 				
 				case OPERADOR:
-					if (topoPilha == BOOLVAR)
-						this->pilhaSintatico.push_back(token);
+					if (topoPilha == BOOLVAR || topoPilha == BOOLCOND)
+						this->pilhaSintatico.push_back(OPERADOR);
 					else
 						retorno = false;
 					break;
 				
 				case LPARENTS:
 					if (topoPilha == IF) {
-						this->pilhaSintatico.push_back(topoPilha);
+						this->pilhaSintatico.push_back(CONDICIONAL);
 						this->pilhaSintatico.push_back(token);
-					} else if (topoPilha == OPERADOR) {
-						this->pilhaSintatico.push_back(BOOLVAR);
+					} else if (topoPilha == IN) {
+						this->pilhaSintatico.push_back(PARENTSIN);
+					} else if (topoPilha == PARENTSIN) {
+						this->pilhaSintatico.push_back(PARENTSIN);
+						this->pilhaSintatico.push_back(PARENTSIN);
+					} else if (topoPilha == OUT) {
+						this->pilhaSintatico.push_back(token);
+					} else if (topoPilha == OPERADOR || topoPilha == ATRIBUICAO) {
+						this->pilhaSintatico.push_back(token);
+					} else if (topoPilha == LPARENTS) {
+						this->pilhaSintatico.push_back(BOOLCOND);
 						this->pilhaSintatico.push_back(token);
 					} else
 						retorno = false;
 					break;
 					
 				case RPARENTS:
-					if (topoPilha == BOOLVAR)
+					if (topoPilha == BOOLVAR) {
+						this->pilhaSintatico.push_back(BOOLCOND);
+						retorno = true;
+					} else if (topoPilha == BOOLCOND || topoPilha == ENTRADA || topoPilha == PARENTSIN) {
+						//consome BOOLCOND
+						retorno = true;
+					} else
+						retorno = false;
+					break;
+				
+				case NOT:
+					
+					if (topoPilha == BOOLVAR || topoPilha == BOOLCOND) {
+						this->pilhaSintatico.push_back(topoPilha);
+						retorno = true;
+					} else
+						retorno = false;
+					break;
+				
+				case LCHAVES:
+					//soh pode fazer se todos itens dentro do 
+					if (topoPilha == CONDICIONAL) {
+						this->pilhaSintatico.push_back(CONDICIONAL);
+						this->pilhaSintatico.push_back(token);
+					} else if (topoPilha == BOOLCOND) {
+						this->pilhaSintatico.push_back(token);
+					} else {
+						retorno = false;
+					}
+					break;
+					
+				case RCHAVES:
+					//teste se é uma RCHAVES e apenas consome o topo da pilha, finalizando um comando
+					if (topoPilha == LCHAVES) {
+						retorno = true;
+					} else 
+						retorno = false;
+					break;
+				case VIRGULA:
+					if (topoPilha == ENTRADA) {
+						this->pilhaSintatico.push_back(token);
+					} else
+						retorno = false;
+					break;
+					
+				case PONTOVIRGULA:
+					if (topoPilha == BOOLVAR || topoPilha == ENTRADA || topoPilha == BOOLCOND || topoPilha == PARENTSIN)
 						retorno = true;
 					else
 						retorno = false;
 					break;
-				
-				case 
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				case INICIO:
-					//fita no inicio pode ler:
-					//coloca o token na pilha IF, IN, OUT, ATRIBUICAO
-					if (token == IF || token == IN || token == OUT || token == IDENTIFICADOR) {
-						this->pilhaSintatico.push_back(topoPilha);
-						this->pilhaSintatico.push_back(token);
-						retorno = this->OperaSintatico();
-					} else
-						retorno = false;
-					break;
 					
-				case IF:
-					//	CONDICIONAL -> <LPARENTES> E1 <RPARENTES>  <LCHAVES,> COMANDO <RCHAVES,> COND_ELSE
-					//token lido so pode ser LPARENTS
-					if (token == LPARENTS) {
-						//coloca IF no topo da pilha
-						this->pilhaSintatico.push_back(topoPilha);
-						this->pilhaSintatico.push_back(token);
-						retorno = this->OperaSintatico();
-					} else
-						retorno = false;
-					break;
-				
-				case LPARENTS:
-					//pilha tem um lparents, entao soh pode ser uma variavel booleana (BOOLVAR) ou outro lparents
-					if (token == IDENTIFICADOR || ehBooleano(token) == BOOLEANO || token == LPARENTS) {
-						this->pilhaSintatico.push_back(topoPilha);
-						this->pilhaSintatico.push_back(token);
-						retorno = this->OperaSintatico();
-					} else
-						retorno = false;
-					break;
+				default:
+					retorno = false;
 					
-				case ELSE:
-					//topo da pilha else, token lido soh pode ser LCHAVES
-					if (token == LCHAVES)
-						retorno = this->OperaSintatico();
-					else
-						retorno = false;
-					break;
-					
-				case BOOLVAR:
-					//caso seja uma variavel booleana pode ler um operador ou not ou LPARENTS
-					if (ehOperador(token) == OPERADOR || token == NOT) {
-						//metodo ehOperador(token), retorna o enum OPERADOR caso seja um dos operadores ou o enum original caso contrario
-						this->pilhaSintatico.push_back(ehOperador(token));
-						retorno = this->OperaSintatico();
-					} else if (token == LPARENTS) {
-						this->pilhaSintatico.push_back(token);
-						retorno = this->OperaSintatico();
-					} else
-						retorno = false;
-					
-					break;
-					
-				case OPERADOR:
-					//caso leia um operador da pilha, soh pode ler um IDENTIFICADOR ou LPARENTS
-					if (token == IDENTIFICADOR || token == LPARENTS || ehBooleano(token) == BOOLEANO) {
-						this->pilhaSintatico.push_back( (token == IDENTIFICADOR || ehBooleano(token) == BOOLEANO  ? BOOLVAR : token) );
-						retorno = this->OperaSintatico();
-					} else
-						retorno = false;
-					
-				case IDENTIFICADOR:
-					//topo da pilha identificador soh pode ser ATRIBUICAO
-					
-					
-					
-					
-					
-					if (token == IDENTIFICADOR || token == LCHAVES || ehReservado(token) || ehBooleano(token) || token == PONTOVIRGULA)
-						retorno = false;
-					else {
-						if (topoPilha == INICIO || topoPilha == LPARENTS) {
-							this->pilhaSintatico.push_back(topoPilha);
-							//se a pilha conter LPARENTS ou INICIO, eh erro sintatico, tratamento: b;
-							if(token == PONTOVIRGULA) retorno = false;
-						}
-						if (retorno) {
-							//coloca o identificador na pilha
-							this->pilhaSintatico.push_back(IDENTIFICADOR);
-							
-							retorno = this->OperaSintatico(token);
-						}
-					}
-					break;
-					
-				case BOOLEANO:
-					//leu 
 			}
+			//cout << "topoPilha: " << Token::ImprimeToken(topoPilha, "ID") << endl;
+			//cout << "back: " << Token::ImprimeToken(this->pilhaSintatico.back(), "ID") << endl;
+			retorno = (retorno ? this->OperaSintatico() : retorno);
+			if (retorno == false) {
+			
+			
+			}
+			
 		}
 	}
 	
