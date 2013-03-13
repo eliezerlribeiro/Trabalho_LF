@@ -18,7 +18,7 @@ bool Sintatico::OperaSintatico() {
 	else {
 		//le o proximo token da fita
 		int token = this->listaTokens.back()->getEstado();
-		if (Sintatico::debug) cout << "FITA: " << Token::ImprimeToken(token, "ID") << endl;
+		if (Sintatico::debug) cout << "FITA: " << Token::ImprimeToken(token, "ID") << " POS: " << this->listaTokens.back()->getPosicao() << " Linha: " << this->listaTokens.back()->getLinha()+1 << endl;
 		this->listaTokens.pop_back();
 		//cout << "Leu: " << Token::ImprimeToken(token, "ID") << endl;
 		if (token == ERRO) {
@@ -50,7 +50,7 @@ bool Sintatico::OperaSintatico() {
 						this->pilhaSintatico.push_back(topoPilha);
 						this->pilhaSintatico.push_back(token);
 
-					} else if (topoPilha == LPARENTS || topoPilha == OUT) {
+					} else if (topoPilha == LPARENTS || topoPilha == OUT || topoPilha == ATRIBUICAO) {
 
 						this->pilhaSintatico.push_back(BOOLVAR);
 
@@ -58,21 +58,12 @@ bool Sintatico::OperaSintatico() {
 
 						this->pilhaSintatico.push_back(ENTRADA);
 
-					} else if (topoPilha == PARENTSIN) {
-
-						this->pilhaSintatico.push_back(topoPilha);
-						this->pilhaSintatico.push_back(ENTRADA);
-
-					} else if (topoPilha == OUT) {
-
-						this->pilhaSintatico.push_back(BOOLVAR);
-
 					} else if (topoPilha == OPERADOR) {
 
 						//this->pilhaSintatico.push_back(topoPilha);
 						this->pilhaSintatico.push_back(BOOLVAR);
 
-					} else if (topoPilha == IF || topoPilha == ELSE ) {
+					} else if (topoPilha == CONDICIONAL) {
 
 						this->pilhaSintatico.push_back(token);
 
@@ -83,7 +74,7 @@ bool Sintatico::OperaSintatico() {
 					}
 					break;
 				case BOOLEANO:
-					if (topoPilha == ATRIBUICAO || topoPilha == OPERADOR) {
+					if (topoPilha == ATRIBUICAO || topoPilha == OPERADOR || topoPilha == LPARENTS || topoPilha == OUT) {
 						this->pilhaSintatico.push_back(BOOLVAR);
 					} else
 						retorno = false;
@@ -95,7 +86,7 @@ bool Sintatico::OperaSintatico() {
 						this->pilhaSintatico.push_back(topoPilha);
 						this->pilhaSintatico.push_back(token);
 						retorno = true;
-					} else if (topoPilha == IF || topoPilha == CONDICIONAL ) {
+					} else if (topoPilha == CONDICIONAL ) {
 						this->pilhaSintatico.push_back(token);
 					} else {
 						retorno = false;
@@ -106,7 +97,7 @@ bool Sintatico::OperaSintatico() {
 					if (topoPilha == INICIO || topoPilha == LCHAVES) {
 						this->pilhaSintatico.push_back(topoPilha);
 						this->pilhaSintatico.push_back(token);
-					} else if (topoPilha == IF || topoPilha == ELSE ) {
+					} else if (topoPilha == CONDICIONAL) {
 						this->pilhaSintatico.push_back(token);
 					} else {
 						retorno = false;
@@ -138,11 +129,6 @@ bool Sintatico::OperaSintatico() {
 					if (topoPilha == IF) {
 						this->pilhaSintatico.push_back(CONDICIONAL);
 						this->pilhaSintatico.push_back(token);
-					} else if (topoPilha == IN) {
-						this->pilhaSintatico.push_back(PARENTSIN);
-					} else if (topoPilha == PARENTSIN) {
-						this->pilhaSintatico.push_back(PARENTSIN);
-						this->pilhaSintatico.push_back(PARENTSIN);
 					} else if (topoPilha == OUT) {
 						this->pilhaSintatico.push_back(token);
 					} else if (topoPilha == OPERADOR || topoPilha == ATRIBUICAO) {

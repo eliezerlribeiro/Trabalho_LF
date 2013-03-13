@@ -59,12 +59,16 @@ Token::Token() {
 	this->setId("");
 	this->setEstado(0);
 	this->setPosicao(0);
+	this->setLinha(0);
 }
 string Token::getId() {
 	return this->id;
 }
 int Token::getPosicao() {
 	return this->posicao;
+}
+int Token::getLinha() {
+	return this->linha;
 }
 int Token::getEstado() {
 	return this->estado;
@@ -77,6 +81,9 @@ void Token::setEstado(int estado) {
 }
 void Token::setPosicao(int posicao) {
 	this->posicao = posicao;
+}
+void Token::setLinha(int linha) {
+	this->linha = linha;
 }
 void Token::setPosicao(int posicao,int token) {
 	int tam = 0;

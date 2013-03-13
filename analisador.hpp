@@ -53,6 +53,7 @@ private:
 	string id;
 	int estado;
 	int posicao;
+	int linha;
 public:
 	Token();
 	string getId();
@@ -62,6 +63,8 @@ public:
 	void setEstado(int);
 	void setPosicao(int);
 	void setPosicao(int, int);
+	int getLinha();
+	void setLinha(int);
 	static string ImprimeToken(int token, string id);
 };
 
