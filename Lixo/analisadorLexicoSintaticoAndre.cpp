@@ -32,7 +32,7 @@ int main(int argc, char * argv[]) {
 		token = Token::listaTokens[i];
 		Token::pilhaLexico.push_back(token);
 	}
-	Token::Imprime();
+	//~ Token::Imprime();
 
 	cout << endl;
 
@@ -600,58 +600,68 @@ void Token::Lexico(string palavra) {
 				}
 				break;
 			case BOOLEANO:
-				if (Token::ehLetra(palavra[i])) {
-					//acrescenta na string
-					s += palavra[i];
-					break;
-				} else if (palavra[i] == '\"') {
-					//final das aspas verifica se a palavra eh reconhecida ou nao na linguagem
-					if (s == "verdadeiro" || s == "true" || s == "v" ) {
-						estado = TRUE;
-						//palavra booleana reconhecida
-					} else if (s == "falso" || s == "false" || s == "f" ) {
-						estado = FALSE;
-						//palavra booleana reconhecida
+				if(!ehSeparador(palavra[i])){
+					if (Token::ehLetra(palavra[i])) {
+						//acrescenta na string
+						s += palavra[i];
+						break;
+					} else if (palavra[i] == '\"') {
+						//final das aspas verifica se a palavra eh reconhecida ou nao na linguagem
+						if (s == "verdadeiro" || s == "true" || s == "v" ) {
+							estado = TRUE;
+							//palavra booleana reconhecida
+						} else if (s == "falso" || s == "false" || s == "f" ) {
+							estado = FALSE;
+							//palavra booleana reconhecida
+						} else {
+							estado = ERRO;
+							erro = "BOOLEANO_ASPAS";
+						}
 					} else {
 						estado = ERRO;
-						erro = "BOOLEANO_ASPAS";
+						erro = "BOOLEANO ";
+						erro += palavra[i];
 					}
-				} else {
-					estado = ERRO;
-					erro = "BOOLEANO ";
-					erro += palavra[i];
-				}
-				tokenizer = true;
-				break;
-			case OPERADOR: // <
-				if (palavra[i] == '-')
-					estado = OPERADORSSS;
-				else {
-					estado = ERRO;
-					erro = "OPERADOR";
 					tokenizer = true;
 				}
 				break;
-			case OPERADORSE:
-				if(!palavra[i] == '>') {
-					estado = ERRO;
-					erro = "OPERADORSE";
+			case OPERADOR: // <
+				if(!ehSeparador(palavra[i])){
+					if (palavra[i] == '-')
+						estado = OPERADORSSS;
+					else {
+						estado = ERRO;
+						erro = "OPERADOR";
+						tokenizer = true;
+					}
 				}
-				tokenizer = true;
+				break;
+			case OPERADORSE:
+				if(!ehSeparador(palavra[i])){
+					if(!palavra[i] == '>') {
+						estado = ERRO;
+						erro = "OPERADORSE";
+					}
+					tokenizer = true;
+				}
 				break;
 			case OPERADORSSS:
-				if(!palavra[i] == '>') {
-					estado = ERRO;
-					erro = "OPERADORSSS";
+				if(!ehSeparador(palavra[i])){
+					if(!palavra[i] == '>') {
+						estado = ERRO;
+						erro = "OPERADORSSS";
+					}
+					tokenizer = true;
 				}
-				tokenizer = true;
 				break;
 			case ATRIBUICAO:
-				if (!palavra[i] == '=') {
-					estado == ERRO;
-					erro = "ATRIBUICAO";
+				if(!ehSeparador(palavra[i])){
+					if (!palavra[i] == '=') {
+						estado == ERRO;
+						erro = "ATRIBUICAO";
+					}
+					tokenizer = true;
 				}
-				tokenizer = true;
 				break;
 			default:
 				estado = OUTRO;
