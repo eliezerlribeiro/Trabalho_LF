@@ -1,4 +1,4 @@
-#include "analisadorLexicoSintatico.hpp"
+#include "analisadorLexicoSintaticoAndre.hpp"
 
 std::vector<Token*> Token::listaTokens;
 std::vector<Token*> Token::pilhaLexico;
@@ -13,39 +13,77 @@ int main(int argc, char * argv[]) {
 		//cout << "Abrindo arquivo " << arquivo << ": " << endl;
 	} else {
 		//cout << "Entrada padrao: " << endl;
-		while (cin.good()) {
+		while (!cin.eof()) {
 			texto.push_back(cin.get());
 		}
-		
+
 		texto[texto.size()-1] = '\0';
 	}
-	
+
 	//Token::Lexico(entrada);
 	Token::Lexico(texto);
-	
+
 	Token * inicio = new Token();
 	inicio->setEstado(INICIO);
 	Token::pilhaLexico.push_back(inicio);
-	
+
 	for (int i =(int) Token::listaTokens.size() - 1 ; i >= 0 ; i--) {
 		Token * token;
 		token = Token::listaTokens[i];
 		Token::pilhaLexico.push_back(token);
 	}
-	Token::Imprime();
-	
-	cout << endl;
-	
-	bool retSintatico = Token::AnalisaSintatico();
-	
-	cout << "Entrada " << (retSintatico ? "valida" : "invalida");
-	
+	//~ Token::Imprime();
 
 	cout << endl;
-	
+
+	bool retSintatico = Token::AnalisaSintatico();
+
+	cout << "Entrada " << (retSintatico ? "valida" : "invalida");
+
+
+	cout << endl;
+
 	return 0;
 }
 
+Token::Token() {
+	this->setId("");
+	this->setEstado(0);
+	this->setPosicao(0);
+}
+string Token::getId() {
+	return this->id;
+}
+int Token::getPosicao() {
+	return this->posicao;
+}
+int Token::getEstado() {
+	return this->estado;
+}
+void Token::setId(string id) {
+	this->id = id;
+}
+void Token::setEstado(int estado) {
+	this->estado = estado;
+}
+void Token::setPosicao(int posicao) {
+	this->posicao = posicao;
+}
+void Token::setPosicao(int posicao,int token) {
+	int tam = 0;
+	switch(token) {
+		case IN:
+			tam = 2;
+		case OUT:
+			tam = 3;
+		case IF:
+			tam = 2;
+		default:
+			break;
+	}
+	posicao -= (tam ? tam - 1 : tam);
+	this->setPosicao(posicao);
+}
 
 /**
  * Inicio Metodos estaticos
@@ -128,23 +166,23 @@ int Token::ehBooleano(int token) {
 
 
 int Token::SintaticoRParents() {
-	
+
 	bool retorno = true;
 	int temp = Token::pilhaSintatico.back();
 	Token::pilhaSintatico.pop_back();
-	
+
 	try {
 		if (temp != LPARENTS)
 			throw 1;
 	} catch (int e) {
 		retorno = false;
 	}
-	
+
 	return retorno;
 }
 
 int Token::SintaticoPontoVirgula() {
-	
+
 	bool retorno = false;
 	int temp = Token::pilhaSintatico.back();
 	//temp = ehReservado(temp);
@@ -173,7 +211,7 @@ bool Token::AnalisaSintatico() {
 		if (Token::pilhaLexico.back()->getEstado() == INICIO){
 			if ( Token::pilhaSintatico.size() != 0)
 				return false;
-			return true;	
+			 return true;	 
 		}
 		if (!Token::Sintatico(VAZIO))
 			return false;
@@ -239,14 +277,20 @@ bool Token::Sintatico(int entrada) {
 			break;
 		case IDENTIFICADOR:
 			switch (token) {
-				case PONTOVIRGULA:
-					retorno = SintaticoPontoVirgula();
-					break;
 				case RPARENTS:
 					retorno = (SintaticoRParents() ? Sintatico(token) : false);
+
 					break;
 				case VIRGULA:
+					retorno = Sintatico(token);
+					break;
+				case PONTOVIRGULA:
+					retorno = SintaticoPontoVirgula();
+					//retorno = ( (int) Token::pilhaSintatico.size() == 0 ? true : false);
+					break;
 				case OPERADOR:
+					retorno = Sintatico(token);
+					break;
 				case NOT:
 					retorno = Sintatico(token);
 					break;
@@ -259,6 +303,8 @@ bool Token::Sintatico(int entrada) {
 			token = ehBooleano(token);
 			switch(token) {
 				case IDENTIFICADOR:
+					retorno = Sintatico(token);
+					break;
 				case BOOLEANO:
 					retorno = Sintatico(token);
 					break;
@@ -272,6 +318,7 @@ bool Token::Sintatico(int entrada) {
 			}
 			break;
 		case VIRGULA:
+			token = ehBooleano(token);
 			switch(token) {
 				case IDENTIFICADOR:
 					retorno = Sintatico(token);
@@ -290,9 +337,10 @@ bool Token::Sintatico(int entrada) {
 		case BOOLEANO:
 			switch(token) {
 				case OPERADOR:
+					retorno = Sintatico(token);
+					break;
 				case NOT:
-				case PONTOVIRGULA:
-					retorno = SintaticoPontoVirgula();
+					retorno = Sintatico(token);
 					break;
 				case VIRGULA:
 					retorno = Sintatico(token);
@@ -307,6 +355,7 @@ bool Token::Sintatico(int entrada) {
 			}
 			break;
 		case OPERADOR:
+			token = ehBooleano(token);
 			if (Token::pilhaSintatico.back() != IN) {
 				switch(token) {
 					case IDENTIFICADOR:
@@ -325,19 +374,24 @@ bool Token::Sintatico(int entrada) {
 			}
 			break;
 		case NOT:
-			switch(token) {
-				case RPARENTS:
-					retorno = (Token::SintaticoRParents() ? Sintatico(token) : false);
-					break;
-				case PONTOVIRGULA:
-					retorno = SintaticoPontoVirgula();
-					break;
-				case OPERADOR:
-				case NOT:
-					retorno = Sintatico(token);
-					break;
-				default:
-					retorno = false;
+			token = ehBooleano(token);
+			if (Token::pilhaSintatico.back() != IN) {
+				switch(token) {
+					case RPARENTS:
+						retorno = (Token::SintaticoRParents() ? Sintatico(token) : false);
+						break;
+					case OPERADOR:
+						retorno = Sintatico(token);
+						break;
+					case NOT:
+						retorno = Sintatico(token);
+						break;
+					case PONTOVIRGULA:
+						retorno = SintaticoPontoVirgula();
+						break;
+					default:
+						retorno = false;
+				}
 			}
 			break;
 		case IF:
@@ -359,17 +413,27 @@ bool Token::Sintatico(int entrada) {
 			}
 			break;
 		case IN:
-			if (token == IDENTIFICADOR)
-				retorno = Sintatico(token);
-			else 
-				retorno = false;
-			break;
-		case OUT:
 			switch(token) {
 				case IDENTIFICADOR:
+					retorno = Sintatico(token);
+					break;
+				default:
+					retorno = false;
+			}
+			break;
+		case OUT:
+			token = ehBooleano(token);
+			switch(token) {
+				case IDENTIFICADOR:
+					retorno = Sintatico(token);
+					break;
 				case BOOLEANO:
 					retorno = Sintatico(token);
 					break;
+				case LPARENTS:
+						Token::pilhaSintatico.push_back(LPARENTS);
+						retorno = Sintatico(token);
+						break;
 				default:
 					retorno = false;
 			}
@@ -377,10 +441,9 @@ bool Token::Sintatico(int entrada) {
 		case LPARENTS:
 				token = ehBooleano(token);
 				switch(token) {
-					case LPARENTS:
-						Token::pilhaSintatico.push_back(LPARENTS);
-						retorno = Sintatico(token);
 					case IDENTIFICADOR:
+						retorno = Sintatico(token);
+						break;
 					case BOOLEANO:
 						retorno = Sintatico(token);
 						break;
@@ -395,6 +458,8 @@ bool Token::Sintatico(int entrada) {
 		case RPARENTS:
 			switch(token) {
 				case NOT:
+					retorno = Sintatico(token);
+					break;
 				case OPERADOR:
 					retorno = Sintatico(token);
 					break;
@@ -505,7 +570,7 @@ void Token::Lexico(string palavra) {
 					else if (palavra[i] == ')')
 						estado = RPARENTS;
 					tokenizer = true;
-					
+
 				} else if (palavra[i] == ';') {
 					//estado eh um ponto e virgula
 					estado = PONTOVIRGULA;
@@ -535,66 +600,76 @@ void Token::Lexico(string palavra) {
 				}
 				break;
 			case BOOLEANO:
-				if (Token::ehLetra(palavra[i])) {
-					//acrescenta na string
-					s += palavra[i];
-					break;
-				} else if (palavra[i] == '\"') {
-					//final das aspas verifica se a palavra eh reconhecida ou nao na linguagem
-					if (s == "verdadeiro" || s == "true" || s == "v" ) {
-						estado = TRUE;
-						//palavra booleana reconhecida
-					} else if (s == "falso" || s == "false" || s == "f" ) {
-						estado = FALSE;
-						//palavra booleana reconhecida
+				if(!ehSeparador(palavra[i])){
+					if (Token::ehLetra(palavra[i])) {
+						//acrescenta na string
+						s += palavra[i];
+						break;
+					} else if (palavra[i] == '\"') {
+						//final das aspas verifica se a palavra eh reconhecida ou nao na linguagem
+						if (s == "verdadeiro" || s == "true" || s == "v" ) {
+							estado = TRUE;
+							//palavra booleana reconhecida
+						} else if (s == "falso" || s == "false" || s == "f" ) {
+							estado = FALSE;
+							//palavra booleana reconhecida
+						} else {
+							estado = ERRO;
+							erro = "BOOLEANO_ASPAS";
+						}
 					} else {
 						estado = ERRO;
-						erro = "BOOLEANO_ASPAS";
+						erro = "BOOLEANO ";
+						erro += palavra[i];
 					}
-				} else {
-					estado = ERRO;
-					erro = "BOOLEANO ";
-					erro += palavra[i];
-				}
-				tokenizer = true;
-				break;
-			case OPERADOR: // <
-				if (palavra[i] == '-')
-					estado = OPERADORSSS;
-				else {
-					estado = ERRO;
-					erro = "OPERADOR";
 					tokenizer = true;
 				}
 				break;
-			case OPERADORSE:
-				if(!palavra[i] == '>') {
-					estado = ERRO;
-					erro = "OPERADORSE";
+			case OPERADOR: // <
+				if(!ehSeparador(palavra[i])){
+					if (palavra[i] == '-')
+						estado = OPERADORSSS;
+					else {
+						estado = ERRO;
+						erro = "OPERADOR";
+						tokenizer = true;
+					}
 				}
-				tokenizer = true;
+				break;
+			case OPERADORSE:
+				if(!ehSeparador(palavra[i])){
+					if(!palavra[i] == '>') {
+						estado = ERRO;
+						erro = "OPERADORSE";
+					}
+					tokenizer = true;
+				}
 				break;
 			case OPERADORSSS:
-				if(!palavra[i] == '>') {
-					estado = ERRO;
-					erro = "OPERADORSSS";
+				if(!ehSeparador(palavra[i])){
+					if(!palavra[i] == '>') {
+						estado = ERRO;
+						erro = "OPERADORSSS";
+					}
+					tokenizer = true;
 				}
-				tokenizer = true;
 				break;
 			case ATRIBUICAO:
-				if (!palavra[i] == '=') {
-					estado == ERRO;
-					erro = "ATRIBUICAO";
+				if(!ehSeparador(palavra[i])){
+					if (!palavra[i] == '=') {
+						estado == ERRO;
+						erro = "ATRIBUICAO";
+					}
+					tokenizer = true;
 				}
-				tokenizer = true;
 				break;
 			default:
 				estado = OUTRO;
 				tokenizer = true;
 				break;
-				
+
 		}
-		
+
 		if (tokenizer) {
 			//cria um token novo a ser inserido na lista
 			Token * novoToken = new Token();
@@ -606,7 +681,7 @@ void Token::Lexico(string palavra) {
 			} else if (estado == ERRO) {
 				novoToken->setId(erro);
 			}
-			
+
 			novoToken->setEstado(estado);
 			novoToken->setPosicao(i);
 			//insere na lista
@@ -636,7 +711,7 @@ void Token::Imprime() {
 }
 
 string Token::ImprimeToken(int token,string id) {
-	
+
 	string Nome;
 	Nome.clear();
 	switch(token) {
