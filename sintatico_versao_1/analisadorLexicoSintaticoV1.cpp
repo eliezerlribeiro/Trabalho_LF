@@ -1,4 +1,4 @@
-#include "analisadorLexicoSintaticoAndre.hpp"
+#include "analisadorLexicoSintaticoV1.hpp"
 
 std::vector<Token*> Token::listaTokens;
 std::vector<Token*> Token::pilhaLexico;
